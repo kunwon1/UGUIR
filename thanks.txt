@@ -1,0 +1,4 @@
+Thanks to the following people:
+
+João F. Henriques (a.k.a. Jotaf) - For 'Complete Roguelike Tutorial, using Python+libtcod'
+Crispin Wellington - For help with my sprite code
