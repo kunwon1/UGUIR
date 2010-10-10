@@ -1,4 +1,8 @@
 Thanks to the following people:
 
-João F. Henriques (a.k.a. Jotaf) - For 'Complete Roguelike Tutorial, using Python+libtcod'
+David E. Gervais[1] for drawing the sprite graphics and making them available under a Creative Commons license
+João F. Henriques (a.k.a. Jotaf) - For 'Complete Roguelike Tutorial, using Python+libtcod'[2]
 Crispin Wellington - For help with my sprite code
+
+[1] http://pousse.rapiere.free.fr/tome/
+[2] http://roguebasin.roguelikedevelopment.org/index.php?title=Complete_Roguelike_Tutorial,_using_python%2Blibtcod
