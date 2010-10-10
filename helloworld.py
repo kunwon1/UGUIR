@@ -1,5 +1,5 @@
 import pyglet
-from pyglet.window.key import MOTION_UP, MOTION_DOWN, MOTION_LEFT, MOTION_RIGHT
+from pyglet.window.key import *
 from pyglet.sprite import Sprite
 
 pyglet.resource.path = ['res', 'res/images',]
@@ -11,7 +11,7 @@ from constants import *
 from msgbox import msgBox
 
 mbox = msgBox()
-map = Map(width=500, height=500)
+map = Map(width=200, height=200)
 map.updateViewport(VIEWPORT_W,VIEWPORT_H)
 window = pyglet.window.Window(width=WINDOW_W, height=WINDOW_H)
 
@@ -31,6 +31,26 @@ def on_text_motion(motion):
         map.movePlayer(-1,0)
     else:
         pass
+
+@window.event
+def on_key_press(symbol, modifiers):
+    if symbol == NUM_1:
+        map.movePlayer(-1,-1)
+    elif symbol == NUM_7:
+        map.movePlayer(-1,1)
+    elif symbol == NUM_9:
+        map.movePlayer(1,1)
+    elif symbol == NUM_3:
+        map.movePlayer(1,-1)
+
+    elif symbol == NUM_8:
+        map.movePlayer(0,1)
+    elif symbol == NUM_6:
+        map.movePlayer(1,0)
+    elif symbol == NUM_2:
+        map.movePlayer(0,-1)
+    elif symbol == NUM_4:
+        map.movePlayer(-1,0)
 
 @window.event
 def on_draw():

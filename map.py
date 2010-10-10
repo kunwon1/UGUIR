@@ -1,6 +1,9 @@
 from pyglet.sprite import Sprite
 import pyglet.graphics
 
+pyglet.resource.path = ['res', 'res/images',]
+pyglet.resource.reindex()
+
 import random
 
 from constants import *
@@ -13,6 +16,7 @@ class Map:
         self.map = []
         self.viewport = []
         (self.playerX, self.playerY) = (0,0)
+        self.playableArea = Rect(1,1,width-2,height-2)
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.playerGroup = pyglet.graphics.OrderedGroup(1)
@@ -28,13 +32,25 @@ class Map:
                 list.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
             self.map.append(list)
         
-        self.makeRectRoom(Rect(12,12,12,12))
-        self.makeRectRoom(Rect(50,50,16,16))
-        self.makeTwoLeggedTunnel(16, 16, 55, 55)
-        self.makeDiagTunnel(15,20,50,60)
-        self.movePlayer(15,15)
-        (self.playerX, self.playerY) = (60,60)
-        
+        bsp = BSP(self.playableArea)
+        rooms = []
+        for r in  bsp.rects:
+            if random.randint(0,10) > 3:
+                roomrect = self.makeRandRoom(r)
+                rooms.append(roomrect)
+
+        lastroom = None
+        for i in rooms:
+            if not lastroom is None:
+                x1,y1 = lastroom.getPoint()
+                x2,y2 = i.getPoint()
+                self.randTunnel(x1,y1,x2,y2)
+                lastroom = i
+            else:
+                px,py = i.getPoint()
+                self.movePlayer(px,py)
+                lastroom = i
+
     def movePlayer(self, x, y):
         (xPx, yPx) = (self.player.x, self.player.y)
         (newX, newY) = (self.playerX + x, self.playerY + y)
@@ -64,6 +80,16 @@ class Map:
             startX = 0
         if startY < 0:
             startY = 0
+        if endX - startX < VIEWPORT_W - 1:
+            if startX < VIEWPORT_W:
+                endX = startX + VIEWPORT_W
+            else:
+                startX = endX - VIEWPORT_W
+        if endY - startY < VIEWPORT_H - 1:
+            if startY < VIEWPORT_H:
+                endY = startY + VIEWPORT_H
+            else:
+                startY = endY - VIEWPORT_H
 
         xIter = 0
 
@@ -86,13 +112,18 @@ class Map:
             for n in xrange(rect.y, rect.y+rect.h):
                 self.map[r][n].blocked = False
                 self.map[r][n].type = DUNGEON_FLOOR
+        return rect
 
     def makeHorizTunnel(self, y, x1, x2):
+        if x1 > x2:
+            (x1,x2) = (x2,x1)
         for x in xrange(x1, x2 + 1):
             self.map[x][y].blocked = False
             self.map[x][y].type = DUNGEON_FLOOR
 
     def makeVertTunnel(self, x, y1, y2):
+        if y1 > y2:
+            (y1,y2) = (y2,y1)
         for y in xrange(y1, y2 + 1):
             self.map[x][y].blocked = False
             self.map[x][y].type = DUNGEON_FLOOR
@@ -129,8 +160,8 @@ class Map:
 
         for x in range(x1, x2 + 1):
             if steep:
-                self.map[x][y].blocked = False
-                self.map[x][y].type = DUNGEON_FLOOR
+                self.map[y][x].blocked = False
+                self.map[y][x].type = DUNGEON_FLOOR
             else:
                 self.map[x][y].blocked = False
                 self.map[x][y].type = DUNGEON_FLOOR                
@@ -139,12 +170,41 @@ class Map:
                 y = y + ystep
                 error = error - deltax
 
+    def randTunnel(self, x1, y1, x2, y2):
+        if random.randint(0,10) > 3:
+            self.makeTwoLeggedTunnel(x1,y1,x2,y2)
+        else:
+            self.makeDiagTunnel(x1,y1,x2,y2)
+
+    def makeRandRoom(self, rect):
+        subFromW = random.randint(1,5)
+        subFromH = random.randint(1,5)
+        addToX = subFromW / 2
+        subFromW = subFromW - addToX
+        addToY = subFromH / 2
+        subFromH = subFromH - addToY
+        
+        x = rect.x + addToX
+        y = rect.y + addToY
+        w = rect.w - subFromW
+        h = rect.h - subFromH
+        
+        if  w > 3 and h > 3:
+            return self.makeRectRoom(Rect(x,y,w,h))
+        else:
+            return self.makeRectRoom(rect)
+
 class Rect:
     def __init__(self, x, y, w, h):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+
+    def getPoint(self):
+        randX = random.randint(self.x+1, self.x+self.w-1)
+        randY = random.randint(self.y+1, self.y+self.h-1)
+        return (randX,randY)
 
     def checkIntersect(self, other):
         for x in xrange(other.x, other.x + other.w + 1):
@@ -159,6 +219,23 @@ class Rect:
                 return True
         return False
 
+    def splitRect(self, x=None, y=None):
+        if x is not None and y is not None:
+            raise ValueError('splitRect must be called with only one arg')
+            return
+        if x is not None:
+            leftSize = x - self.x
+            rightSize = self.w - leftSize - 1
+            leftRect = Rect(self.x, self.y, leftSize, self.h)
+            rightRect = Rect(x+1, self.y, rightSize, self.h)
+            return (leftRect, rightRect)
+        else:
+            bottomSize = y - self.y 
+            topSize = self.h - bottomSize - 1
+            bottomRect = Rect(self.x, self.y, self.w, bottomSize)
+            topRect = Rect(self.x, y+1, self.w, topSize)
+            return (bottomRect, topRect)
+
 class MapCell:
     def __init__(self, xCells, yCells, batch, group, blocked=True):
         self.blocked = blocked
@@ -169,7 +246,41 @@ class MapCell:
         self.xPx = self.xCells * SPRITE_SIZE
         self.yPx = self.yCells * SPRITE_SIZE
         self.type = DUNGEON_WALL
-        
+
+class BSP:
+    def __init__(self, firstRect):
+        self.firstRect = firstRect
+        self.rects = []
+        self.rects.append(self.firstRect)
+        self.doBSP()
+
+    def splitRand(self, rect):
+        if random.randint(0,1) == 0:  # split on x
+            min = rect.x + MINIMUM_ROOM_SIZE + 1
+            max = rect.x + rect.w - MINIMUM_ROOM_SIZE - 1
+            if not max > min:
+                return [rect]
+            randx = random.randint(min,max)
+            return rect.splitRect(x=randx)
+        else:                           #split on y
+            min = rect.y + MINIMUM_ROOM_SIZE + 1
+            max = rect.y + rect.h - MINIMUM_ROOM_SIZE - 1
+            if not max > min:
+                return [rect]
+            randy = random.randint(min,max)
+            return rect.splitRect(y=randy)
+
+    def doBSP(self):
+        iter = 0
+        while iter <= BSP_RECURSION_DEPTH:
+            newRects = []
+            for rect in self.rects:
+                rectsTuple = self.splitRand(rect)
+                for item in rectsTuple:
+                    newRects.append(item)
+            self.rects = newRects
+            iter += 1
+                
 def isNearEdge(x,y):
     lowPass = CLOSE_TO_EDGE
     highPassX = VIEWPORT_W * SPRITE_SIZE - CLOSE_TO_EDGE
@@ -178,3 +289,15 @@ def isNearEdge(x,y):
         if lowPass <= y <= highPassY:
             return False
     return True
+
+if __name__ == '__main__':
+    import sys
+    
+    map = Map(width=100,height=79)
+    for x in range(len(map.map)):
+        for y in range(len(map.map[x])):
+            if map.map[x][y].type == DUNGEON_WALL:
+                sys.stdout.write('#')
+            elif map.map[x][y].type == DUNGEON_FLOOR:
+                sys.stdout.write(' ')
+        print '\n',
