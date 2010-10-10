@@ -7,12 +7,14 @@ random.seed()
 from constants import *
 from spritesheet import sheet
 from player import Player
+from position import Position
 
 class Map(object):
     def __init__(self, width=DEFAULT_MAP_CELLS_X, height=DEFAULT_MAP_CELLS_Y):
         self.map = []
         self.viewport = []
         self.playerX, self.playerY = 0, 0
+        self.playerPos = Position()
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.playerGroup = pyglet.graphics.OrderedGroup(1)
@@ -23,17 +25,16 @@ class Map(object):
         self.initViewport()
 
         for x in range(width):
-            # list should be renamed something else.
-            list = []
+            lst = []
             for y in range(height):
-                list.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
-            self.map.append(list)
+                lst.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
+            self.map.append(lst)
         
-        self.makeRectRoom(Rect(12,12,12,12))
-        self.makeRectRoom(Rect(50,50,16,16))
+        self.makeRectRoom(Rect(12, 12, 12, 12))
+        self.makeRectRoom(Rect(50, 50, 16, 16))
         self.makeTwoLeggedTunnel(16, 16, 55, 55)
-        self.movePlayer(15,15)
-        (self.playerX, self.playerY) = (60,60)
+        self.movePlayer(15, 15)
+        self.playerX, self.playerY = 60, 60
         
     def movePlayer(self, x, y):
         xPx, yPx = self.player.x, self.player.y
@@ -49,7 +50,11 @@ class Map(object):
     def initViewport(self):
         for x in range(len(self.viewport)):
             for y in range(len(self.viewport[x])):
-                self.viewport[x][y] = Sprite(sheet['dungeon'][81], x=x * SPRITE_SIZE, y=y * SPRITE_SIZE, batch = self.batch, group = self.mapGroup)
+                self.viewport[x][y] = Sprite(sheet['dungeon'][81], 
+                                             x=x * SPRITE_SIZE, 
+                                             y=y * SPRITE_SIZE, 
+                                             batch = self.batch, 
+                                             group = self.mapGroup)
 
     def updateViewport(self, width, height):
         startX = self.playerX - width / 2
