@@ -71,25 +71,27 @@ class Map:
         startY = self.playerY - height / 2
         endX = startX + width
         endY = startY + height
+        mapLenX = len(self.map)
+        mapLenY = len(self.map[0])
         
-        if endX > (len(self.map) - 1):
-            endX = len(self.map) - 1
-        if endY > (len(self.map[endX])):
-            endY = len(self.map[endX]) - 1
+        if endX > mapLenX - 1:
+            endX = mapLenX - 1
+        if endY > mapLenY:
+            endY = mapLenY - 1
         if startX < 0:
             startX = 0
         if startY < 0:
             startY = 0
         if endX - startX < VIEWPORT_W - 1:
             if startX < VIEWPORT_W:
-                endX = startX + VIEWPORT_W
+                startX,endX = 0,VIEWPORT_W
             else:
-                startX = endX - VIEWPORT_W
+                startX,endX = mapLenX - VIEWPORT_W, mapLenX 
         if endY - startY < VIEWPORT_H - 1:
             if startY < VIEWPORT_H:
-                endY = startY + VIEWPORT_H
+                startY,endY = 0,VIEWPORT_H
             else:
-                startY = endY - VIEWPORT_H
+                startY,endY = mapLenY - VIEWPORT_H, mapLenY 
 
         xIter = 0
 
