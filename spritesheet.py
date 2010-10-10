@@ -1,5 +1,6 @@
 import pyglet
 
+# this variable name shadows the builtin list type constructor
 list = {
           "class": ('dg_classm32.png', 11, 8),
           "dungeon": ('dg_dungeon32.gif', 10, 9),

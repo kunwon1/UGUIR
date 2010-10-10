@@ -2,17 +2,17 @@ from pyglet.sprite import Sprite
 import pyglet.graphics
 
 import random
+random.seed()
 
 from constants import *
 from spritesheet import sheet
 from player import Player
 
-class Map:
+class Map(object):
     def __init__(self, width=DEFAULT_MAP_CELLS_X, height=DEFAULT_MAP_CELLS_Y):
-        random.seed()
         self.map = []
         self.viewport = []
-        (self.playerX, self.playerY) = (0,0)
+        self.playerX, self.playerY = 0, 0
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.playerGroup = pyglet.graphics.OrderedGroup(1)
@@ -23,6 +23,7 @@ class Map:
         self.initViewport()
 
         for x in range(width):
+            # list should be renamed something else.
             list = []
             for y in range(height):
                 list.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
@@ -35,15 +36,16 @@ class Map:
         (self.playerX, self.playerY) = (60,60)
         
     def movePlayer(self, x, y):
-        (xPx, yPx) = (self.player.x, self.player.y)
-        (newX, newY) = (self.playerX + x, self.playerY + y)
-        if self.map[newX][newY].blocked == True:
+        xPx, yPx = self.player.x, self.player.y
+        newX, newY = self.playerX + x, self.playerY + y
+
+        if self.map[newX][newY].blocked:
             return
         else:
             self.player.set_position(xPx + x*SPRITE_SIZE, yPx + y*SPRITE_SIZE)
             self.playerX = newX
             self.playerY = newY
-
+    
     def initViewport(self):
         for x in range(len(self.viewport)):
             for y in range(len(self.viewport[x])):
@@ -104,7 +106,7 @@ class Map:
             self.makeVertTunnel(x1, y1, y2)
             self.makeHorizTunnel(y2, x1, x2)
 
-class Rect:
+class Rect(object):
     def __init__(self, x, y, w, h):
         self.x = x
         self.y = y
@@ -124,7 +126,7 @@ class Rect:
                 return True
         return False
 
-class MapCell:
+class MapCell(object):
     def __init__(self, xCells, yCells, batch, group, blocked=True):
         self.blocked = blocked
         self.batch = batch
