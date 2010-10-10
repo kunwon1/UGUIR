@@ -31,6 +31,7 @@ class Map:
         self.makeRectRoom(Rect(12,12,12,12))
         self.makeRectRoom(Rect(50,50,16,16))
         self.makeTwoLeggedTunnel(16, 16, 55, 55)
+        self.makeDiagTunnel(15,20,50,60)
         self.movePlayer(15,15)
         (self.playerX, self.playerY) = (60,60)
         
@@ -103,6 +104,40 @@ class Map:
         else:
             self.makeVertTunnel(x1, y1, y2)
             self.makeHorizTunnel(y2, x1, x2)
+
+    def makeDiagTunnel(self, x1, y1, x2, y2):
+        '''see bresenham_line.py for license'''
+
+        steep = abs(y2 - y1) > abs(x2 - x1)
+        if steep:
+            x1, y1 = y1, x1  
+            x2, y2 = y2, x2
+
+        if x1 > x2:
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+
+        if y1 < y2: 
+            ystep = 1
+        else:
+            ystep = -1
+
+        deltax = x2 - x1
+        deltay = abs(y2 - y1)
+        error = -deltax / 2
+        y = y1
+
+        for x in range(x1, x2 + 1):
+            if steep:
+                self.map[x][y].blocked = False
+                self.map[x][y].type = DUNGEON_FLOOR
+            else:
+                self.map[x][y].blocked = False
+                self.map[x][y].type = DUNGEON_FLOOR                
+            error = error + deltay
+            if error > 0:
+                y = y + ystep
+                error = error - deltax
 
 class Rect:
     def __init__(self, x, y, w, h):
