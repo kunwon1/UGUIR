@@ -189,8 +189,6 @@ class Map(object):
             if self.map[x][pos.y].type == DUNGEON_DOOR:
                     continue
             doorPlacement = self.map[x][pos.y].checkDoorPlacement(self)
-            if doorPlacement is None:
-                continue
             self.map[x][pos.y].blocked = False
             self.map[x][pos.y].type = DUNGEON_FLOOR
             if flag < MAX_DOORS_PER_TUNNEL:
