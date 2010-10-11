@@ -136,21 +136,18 @@ class Map(object):
 
     def updateViewport(self, width, height):
         startPos,endPos = self.getViewportPos(width,height)
-        
-        startX,startY = startPos.x,startPos.y
-        endX,endY = endPos.x,endPos.y
 
-        for x in xrange(startX, endX):
-            for y in xrange(startY, endY):
+        for x in xrange(startPos.x, endPos.x):
+            for y in xrange(startPos.y, endPos.y):
                 self.map[x][y].visible = False
 
         self.doFOV()
 
         xIter = 0
 
-        for x in xrange(startX, endX):
+        for x in xrange(startPos.x, endPos.x):
             yIter = 0
-            for y in xrange(startY, endY):
+            for y in xrange(startPos.y, endPos.y):
                 if x == self.playerPos.x and y == self.playerPos.y:
                     playerXPx = self.viewport[xIter][yIter].x
                     playerYPx = self.viewport[xIter][yIter].y
