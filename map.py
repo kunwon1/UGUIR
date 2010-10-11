@@ -131,7 +131,9 @@ class Map:
                     self.viewport[xIter][yIter].image = sheet['dungeon'][81]
                 elif self.map[x][y].type == DUNGEON_FLOOR:
                     self.viewport[xIter][yIter].image = sheet['ground'][170]
-                if self.map[x][y].visible == False:
+                if self.map[x][y].discovered == False:
+                    self.viewport[xIter][yIter].opacity = 0
+                elif self.map[x][y].visible == False:
                     self.viewport[xIter][yIter].opacity = 128
                 else:
                     self.viewport[xIter][yIter].opacity = 255
@@ -153,6 +155,7 @@ class Map:
         if y < 0:
             y = 0
         self.map[x][y].visible = True
+        self.map[x][y].discovered = True
 
     def funcBlocked(self,x,y):
         return self.map[x][y].blocked
@@ -287,9 +290,12 @@ class Rect:
             return (bottomRect, topRect)
 
 class MapCell:
-    def __init__(self, xCells, yCells, batch, group, blocked=True, visible=True):
+    def __init__(self, xCells, yCells, batch,
+                 group, blocked=True, visible=True,
+                 discovered=False):
         self.blocked = blocked
         self.visible = visible
+        self.discovered = discovered
         self.batch = batch
         self.group = group
         self.xCells = xCells

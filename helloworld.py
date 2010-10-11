@@ -1,6 +1,5 @@
 import pyglet
 from pyglet.window.key import *
-from pyglet.sprite import Sprite
 
 pyglet.resource.path = ['res', 'res/images',]
 pyglet.resource.reindex()
