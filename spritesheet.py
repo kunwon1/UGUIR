@@ -3,7 +3,8 @@ import pyglet
 list = {
           "class": ('dg_classm32.png', 11, 8),
           "dungeon": ('dg_dungeon32.gif', 10, 9),
-          "ground": ('dg_grounds32.gif', 19, 9)
+          "ground": ('dg_grounds32.gif', 19, 9),
+          "monster1": ('dg_monster132.png', 16, 6)
           }
 
 img = {}

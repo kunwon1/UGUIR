@@ -11,7 +11,7 @@ from constants import *
 from msgbox import msgBox
 
 mbox = msgBox()
-map = Map(width=200, height=200)
+map = Map(width=60, height=70)
 map.updateViewport(VIEWPORT_W,VIEWPORT_H)
 window = pyglet.window.Window(width=WINDOW_W, height=WINDOW_H)
 
@@ -56,8 +56,7 @@ def on_key_press(symbol, modifiers):
 def on_draw():
     window.clear()
     outline.draw()
-    if isNearEdge(map.player.x, map.player.y):
-        map.updateViewport(VIEWPORT_W,VIEWPORT_H)
+    map.updateViewport(VIEWPORT_W,VIEWPORT_H)
     mbox.draw()
     map.batch.draw()
     map.player.draw()

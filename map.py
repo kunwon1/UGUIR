@@ -9,6 +9,8 @@ import random
 from constants import *
 from spritesheet import sheet
 from player import Player
+from monsters import *
+from fov import fieldOfView
 
 class Map:
     def __init__(self, width=DEFAULT_MAP_CELLS_X, height=DEFAULT_MAP_CELLS_Y):
@@ -16,10 +18,12 @@ class Map:
         self.map = []
         self.viewport = []
         (self.playerX, self.playerY) = (0,0)
+        self.width, self.height = width, height
         self.playableArea = Rect(1,1,width-2,height-2)
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
-        self.playerGroup = pyglet.graphics.OrderedGroup(1)
+        self.monsterGroup = pyglet.graphics.OrderedGroup(1)
+        self.playerGroup = pyglet.graphics.OrderedGroup(2)
         self.player = Player(x=0, y=0, batch=self.batch, group=self.playerGroup)
         
         for i in range(VIEWPORT_W):
@@ -49,7 +53,21 @@ class Map:
             else:
                 px,py = i.getPoint()
                 self.movePlayer(px,py)
+                self.map[px+1][py+1].objects.append(Kobold(batch=self.batch, group=self.monsterGroup))
                 lastroom = i
+
+    def debugPrint(self):
+        import sys
+        
+        for x in range(len(self.map)):
+            for y in range(len(self.map[x])):
+                if self.map[x][y].type == DUNGEON_WALL:
+                    sys.stdout.write('#')
+                elif self.map[x][y].visible == True:
+                    sys.stdout.write(' ')
+                elif self.map[x][y].type == DUNGEON_FLOOR:
+                    sys.stdout.write('~')
+            print '\n',
 
     def movePlayer(self, x, y):
         (xPx, yPx) = (self.player.x, self.player.y)
@@ -91,7 +109,14 @@ class Map:
             if startY < VIEWPORT_H:
                 startY,endY = 0,VIEWPORT_H
             else:
-                startY,endY = mapLenY - VIEWPORT_H, mapLenY 
+                startY,endY = mapLenY - VIEWPORT_H, mapLenY
+
+        for x in xrange(startX, endX):
+            yIter = 0
+            for y in xrange(startY, endY):
+                self.map[x][y].visible = False
+
+        self.doFOV()
 
         xIter = 0
 
@@ -106,8 +131,31 @@ class Map:
                     self.viewport[xIter][yIter].image = sheet['dungeon'][81]
                 elif self.map[x][y].type == DUNGEON_FLOOR:
                     self.viewport[xIter][yIter].image = sheet['ground'][170]
+                if self.map[x][y].visible == False:
+                    self.viewport[xIter][yIter].opacity = 128
+                else:
+                    self.viewport[xIter][yIter].opacity = 255
+                for obj in self.map[x][y].objects:
+                    obj.set_position(xIter*32,yIter*32)
+                    if obj.blocked is True:
+                        self.map[x][y].blocked = True
                 yIter += 1
             xIter += 1
+
+    def doFOV(self):
+        fieldOfView(self.playerX,self.playerY,
+                    self.width,self.height,15,
+                    self.funcVisit,self.funcBlocked)
+
+    def funcVisit(self,x,y):
+        if x < 0:
+            x = 0
+        if y < 0:
+            y = 0
+        self.map[x][y].visible = True
+
+    def funcBlocked(self,x,y):
+        return self.map[x][y].blocked
 
     def makeRectRoom(self, rect):
         for r in xrange(rect.x, rect.x+rect.w):
@@ -239,8 +287,9 @@ class Rect:
             return (bottomRect, topRect)
 
 class MapCell:
-    def __init__(self, xCells, yCells, batch, group, blocked=True):
+    def __init__(self, xCells, yCells, batch, group, blocked=True, visible=True):
         self.blocked = blocked
+        self.visible = visible
         self.batch = batch
         self.group = group
         self.xCells = xCells
@@ -248,6 +297,11 @@ class MapCell:
         self.xPx = self.xCells * SPRITE_SIZE
         self.yPx = self.yCells * SPRITE_SIZE
         self.type = DUNGEON_WALL
+        self.objects = []
+
+    def setVisible(self):
+        print 'setting visible for %i,%i' % (self.xCells, self.yCells)
+        self.visible = True
 
 class BSP:
     def __init__(self, firstRect):
@@ -295,7 +349,7 @@ def isNearEdge(x,y):
 if __name__ == '__main__':
     import sys
     
-    map = Map(width=100,height=79)
+    map = Map(width=60,height=79)
     for x in range(len(map.map)):
         for y in range(len(map.map[x])):
             if map.map[x][y].type == DUNGEON_WALL:
@@ -303,3 +357,4 @@ if __name__ == '__main__':
             elif map.map[x][y].type == DUNGEON_FLOOR:
                 sys.stdout.write(' ')
         print '\n',
+        

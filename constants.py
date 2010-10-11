@@ -21,6 +21,27 @@ CLOSE_TO_EDGE = 164
 
 #MAP GENERATION STUFF
 MINIMUM_ROOM_SIZE = 4
-BSP_RECURSION_DEPTH = 8
+BSP_RECURSION_DEPTH = 10
 
 DEFAULT_MSGSTYLE = dict(font_name='Arial', font_size=10, color=(255,255,255,255))
+
+bonus = {
+         "1": -6,
+         "2": -5,
+         "3": -5,
+         "4": -4,
+         "5": -4,
+         "6": -3,
+         "7": -3,
+         "8": -2,
+         "9": -2,
+         "10": -1,
+         "11": 0,
+         "12": 0,
+         "13": 0,
+         "14": 1,
+         "15": 2,
+         "16": 4,
+         "17": 5,
+         "18": 6
+         }
