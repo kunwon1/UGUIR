@@ -11,6 +11,9 @@ from constants import *
 from spritesheet import sheet
 from player import Player
 from monsters import *
+from BSP import BSP
+from mapcell import MapCell
+from rect import Rect
 from fov import fieldOfView
 from position import Position
 
@@ -311,147 +314,6 @@ class Map(object):
             return self.makeRectRoom(Rect(newPos,w,h))
         else:
             return self.makeRectRoom(rect)
-
-class Rect(object):
-    def __init__(self, pos, w, h):
-        self.pos = pos
-        self.w = w
-        self.h = h
-
-    def getPoint(self):
-        randX = random.randint(self.pos.x+1, self.pos.x+self.w-1)
-        randY = random.randint(self.pos.y+1, self.pos.y+self.h-1)
-        return Position(randX,randY)
-
-    def checkIntersect(self, other):
-        for x in xrange(other.pos.x, other.pos.x + other.w + 1):
-            for y in xrange(other.pos.y, other.pos.y + other.h + 1):
-                if self.checkPointIntersect(Position(x, y)):
-                    return True
-        return False
-
-    def checkPointIntersect(self, otherPos):
-        if self.pos.x <= otherPos.x <= self.pos.x + self.w:
-            if self.pos.y <= otherPos.y <= self.pos.y + self.h:
-                return True
-        return False
-
-    def splitRect(self, splitPos):
-        if not splitPos.x == 0 and not splitPos.y == 0:
-            raise ValueError('splitRect must be called with either x or y set to 0')
-            return
-        if not splitPos.x == 0:
-            leftSize = splitPos.x - self.pos.x
-            rightSize = self.w - leftSize - 1
-            leftRect = Rect(self.pos, leftSize, self.h)
-            rightRect = Rect(Position(splitPos.x+1, self.pos.y), rightSize, self.h)
-            return (leftRect, rightRect)
-        else:
-            bottomSize = splitPos.y - self.pos.y 
-            topSize = self.h - bottomSize - 1
-            bottomRect = Rect(self.pos, self.w, bottomSize)
-            topRect = Rect(Position(self.pos.x, splitPos.y+1), self.w, topSize)
-            return (bottomRect, topRect)
-
-class MapCell:
-    def __init__(self, pos, batch,
-                 group, blocked=True, visible=True,
-                 discovered=False):
-        self.blocked = blocked
-        self.visible = visible
-        self.discovered = discovered
-        self.batch = batch
-        self.group = group
-        self.pos = pos
-        self.xPx = self.pos.x * SPRITE_SIZE
-        self.yPx = self.pos.y * SPRITE_SIZE
-        self.type = DUNGEON_WALL
-        self.objects = []
-
-    def checkDoorPlacement(self, gameMap):
-        for r in gameMap.rooms:
-            if r.checkPointIntersect(self.pos):
-                return False
-
-        iterPos = Position(self.pos.x,self.pos.y)
-        results = []
-        topResult = self.checkCell(gameMap, iterPos.moveUp())
-        results.append(self.checkCell(gameMap, iterPos.moveRight()))
-        rightResult = self.checkCell(gameMap, iterPos.moveDown())
-        results.append(self.checkCell(gameMap, iterPos.moveDown()))
-        bottomResult = self.checkCell(gameMap, iterPos.moveLeft())
-        results.append(self.checkCell(gameMap, iterPos.moveLeft()))
-        leftResult = self.checkCell(gameMap, iterPos.moveUp())
-        results.append(self.checkCell(gameMap, iterPos.moveUp()))
-
-        if topResult == DUNGEON_DOOR and bottomResult == DUNGEON_WALL:
-            return True
-        if bottomResult == DUNGEON_DOOR and topResult == DUNGEON_WALL:
-            return True
-        if leftResult == DUNGEON_DOOR and rightResult == DUNGEON_WALL:
-            return True
-        if rightResult == DUNGEON_DOOR and leftResult == DUNGEON_WALL:
-            return True 
-
-        if not topResult == DUNGEON_WALL and not bottomResult == DUNGEON_WALL:
-            if not leftResult == DUNGEON_WALL and not rightResult == DUNGEON_WALL:
-                return False
-        
-        results.append(topResult)
-        results.append(bottomResult)
-        results.append(leftResult)
-        results.append(rightResult)
-        
-        found = [0,0,0,0] 
-        for i in results:
-            found[i] += 1
-
-        if found[DUNGEON_FLOOR] > 1:
-            if found[DUNGEON_WALL] > 2:
-                return True
-        return False
-
-    def checkCell(self, gameMap, pos):
-        try:
-            cell = gameMap.getCellAtPos(pos)
-        except IndexError:
-            return OUT_OF_BOUNDS
-        return cell.type
-
-class BSP:
-    def __init__(self, firstRect):
-        self.firstRect = firstRect
-        self.rects = []
-        self.rects.append(self.firstRect)
-        self.doBSP()
-
-    def splitRand(self, rect):
-        if random.randint(0,1) == 0:  # split on x
-            min = rect.pos.x + MINIMUM_ROOM_SIZE + 1
-            max = rect.pos.x + rect.w - MINIMUM_ROOM_SIZE - 1
-            if not max > min:
-                return [rect]
-            randx = random.randint(min,max)
-            return rect.splitRect(Position(randx,0))
-        else:                           #split on y
-            min = rect.pos.y + MINIMUM_ROOM_SIZE + 1
-            max = rect.pos.y + rect.h - MINIMUM_ROOM_SIZE - 1
-            if not max > min:
-                return [rect]
-            randy = random.randint(min,max)
-            return rect.splitRect(Position(0,randy))
-
-    def doBSP(self):
-        iter = 0
-        while iter <= BSP_RECURSION_DEPTH:
-            newRects = []
-            for rect in self.rects:
-                rectsTuple = self.splitRand(rect)
-                for item in rectsTuple:
-                    newRects.append(item)
-            self.rects = newRects
-            iter += 1
-                
 
 if __name__ == '__main__':
     import sys
