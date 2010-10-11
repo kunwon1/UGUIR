@@ -243,7 +243,7 @@ class Map(object):
         error = -deltax / 2
         y = pos1.y
         
-        iter, flag = 0,0
+        flag = 0
         
         for x in range(pos1.x, pos2.x + 1):
             if steep:
@@ -257,7 +257,6 @@ class Map(object):
                         self.map[y][x].type = DUNGEON_DOOR
                         self.map[y][x].blocked = True
                         flag += 1
-                iter += 1
             else:
                 if self.map[x][y].type == DUNGEON_DOOR:
                     continue
@@ -269,7 +268,6 @@ class Map(object):
                         self.map[x][y].type = DUNGEON_DOOR
                         self.map[x][y].blocked = True
                         flag += 1
-                iter += 1
             error = error + deltay
             if error > 0:
                 y = y + ystep
