@@ -252,7 +252,7 @@ class Map(object):
                 doorPlacement = self.map[y][x].checkDoorPlacement(self)
                 self.map[y][x].blocked = False
                 self.map[y][x].type = DUNGEON_FLOOR
-                if (iter > 2 and (flag < MAX_DOORS_PER_TUNNEL)) or (iter > 6 and (flag < MAX_DOORS_PER_TUNNEL)):
+                if flag < MAX_DOORS_PER_TUNNEL:
                     if doorPlacement == True:
                         self.map[y][x].type = DUNGEON_DOOR
                         self.map[y][x].blocked = True
@@ -264,7 +264,7 @@ class Map(object):
                 doorPlacement = self.map[x][y].checkDoorPlacement(self)
                 self.map[x][y].blocked = False
                 self.map[x][y].type = DUNGEON_FLOOR
-                if (iter > 2 and flag < MAX_DOORS_PER_TUNNEL) or (iter > 6 and flag < MAX_DOORS_PER_TUNNEL):
+                if flag < MAX_DOORS_PER_TUNNEL:
                     if doorPlacement == True:
                         self.map[x][y].type = DUNGEON_DOOR
                         self.map[x][y].blocked = True
