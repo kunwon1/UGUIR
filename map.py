@@ -30,20 +30,29 @@ class Map(object):
         for i in range(VIEWPORT_W):
             self.viewport.append([0]*VIEWPORT_H)
         self.initViewport()
+        
+        self.initGameMap()        
 
-        for x in range(width):
+        self.initBSP()
+
+        self.drawTunnels()
+
+    def initGameMap(self):
+        for x in range(self.width):
             lst = []
-            for y in range(height):
+            for y in range(self.height):
                 lst.append(MapCell(Position(x, y), self.batch, self.mapGroup))
             self.map.append(lst)
 
+    def initBSP(self):
         bsp = BSP(self.playableArea)
         self.rooms = []
-        for r in  bsp.rects:
+        for r in bsp.rects:
             if random.randint(0,10) > 3:
                 roomrect = self.makeRandRoom(r)
                 self.rooms.append(roomrect)
-
+                
+    def drawTunnels(self):
         lastroom = None
         for i in self.rooms:
             if not lastroom is None:
@@ -94,7 +103,7 @@ class Map(object):
                                              batch = self.batch, 
                                              group = self.mapGroup)
 
-    def updateViewport(self, width, height):
+    def getViewportPos(self,width,height):
         startX = self.playerPos.x - width / 2
         startY = self.playerPos.y - height / 2
         endX = startX + width
@@ -120,6 +129,16 @@ class Map(object):
                 startY,endY = 0,VIEWPORT_H
             else:
                 startY,endY = mapLenY - VIEWPORT_H, mapLenY
+        startPos = Position(startX,startY)
+        endPos = Position(endX,endY)
+        return (startPos,endPos)
+        
+
+    def updateViewport(self, width, height):
+        startPos,endPos = self.getViewportPos(width,height)
+        
+        startX,startY = startPos.x,startPos.y
+        endX,endY = endPos.x,endPos.y
 
         for x in xrange(startX, endX):
             for y in xrange(startY, endY):
