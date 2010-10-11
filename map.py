@@ -38,14 +38,14 @@ class Map(object):
             self.map.append(lst)
 
         bsp = BSP(self.playableArea)
-        rooms = []
+        self.rooms = []
         for r in  bsp.rects:
             if random.randint(0,10) > 3:
                 roomrect = self.makeRandRoom(r)
-                rooms.append(roomrect)
+                self.rooms.append(roomrect)
 
         lastroom = None
-        for i in rooms:
+        for i in self.rooms:
             if not lastroom is None:
                 pos1 = lastroom.getPoint()
                 pos2 = i.getPoint()
@@ -184,16 +184,28 @@ class Map(object):
     def makeHorizTunnel(self, pos, x2):
         if pos.x > x2:
             (pos.x,x2) = (x2,pos.x)
+        flag = 0
         for x in xrange(pos.x, x2 + 1):
             self.map[x][pos.y].blocked = False
             self.map[x][pos.y].type = DUNGEON_FLOOR
+            if (flag == 0):
+                if self.map[x][pos.y].checkDoorPlacement(self) == True:
+                    self.map[x][pos.y].type = DUNGEON_DOOR
+                    self.map[x][pos.y].blocked = True
+                    flag += 1
 
     def makeVertTunnel(self, pos, y2):
         if pos.y > y2:
             (pos.y,y2) = (y2,pos.y)
+        flag = 0
         for y in xrange(pos.y, y2 + 1):
             self.map[pos.x][y].blocked = False
             self.map[pos.x][y].type = DUNGEON_FLOOR
+            if (flag == 0):
+                if self.map[pos.x][y].checkDoorPlacement(self) == True:
+                    self.map[pos.x][y].type = DUNGEON_DOOR
+                    self.map[pos.x][y].blocked = True
+                    flag += 1
 
     def makeTwoLeggedTunnel(self, pos1, pos2):
         if random.randint(0,1) == 0:
@@ -331,19 +343,30 @@ class MapCell:
         self.objects = []
 
     def checkDoorPlacement(self, gameMap):
+        for r in gameMap.rooms:
+            if r.checkPointIntersect(self.pos):
+                return
+
         iterPos = Position(self.pos.x,self.pos.y)
         results = []
-        results.append(self.checkCell(gameMap, iterPos.moveUp()))
-        results.append(self.checkCell(gameMap, iterPos.moveDown()))
-        results.append(self.checkCell(gameMap, iterPos.moveLeft()))
+        topResult = self.checkCell(gameMap, iterPos.moveUp())
         results.append(self.checkCell(gameMap, iterPos.moveRight()))
-        results.append(self.checkCell(gameMap, iterPos.moveUpLeft()))
-        results.append(self.checkCell(gameMap, iterPos.moveUpRight()))
-        results.append(self.checkCell(gameMap, iterPos.moveDownLeft()))
-        results.append(self.checkCell(gameMap, iterPos.moveDownRight()))
+        rightResult = self.checkCell(gameMap, iterPos.moveDown())
+        results.append(self.checkCell(gameMap, iterPos.moveDown()))
+        bottomResult = self.checkCell(gameMap, iterPos.moveLeft())
+        results.append(self.checkCell(gameMap, iterPos.moveLeft()))
+        leftResult = self.checkCell(gameMap, iterPos.moveUp())
+        results.append(self.checkCell(gameMap, iterPos.moveUp()))
+
+        if not (topResult == 0 and bottomResult == 0):
+            if not (leftResult == 0 and rightResult == 0):
+                return False
         
-        print results
-        
+        results.append(topResult)
+        results.append(bottomResult)
+        results.append(leftResult)
+        results.append(rightResult)
+
         myself = self.checkCell(gameMap, self.pos)
         if myself == DUNGEON_DOOR:
             return False
@@ -351,9 +374,9 @@ class MapCell:
         found = [0,0,0,0] 
         for i in results:
             found[i] += 1
-        
-        if found[DUNGEON_FLOOR] > 2:
-            if found[DUNGEON_WALL] > 2:
+
+        if found[1] > 2:
+            if found[0] > 1:
                 return True
         return False
             
