@@ -1,4 +1,16 @@
+from position import Position
+
 SPRITE_SIZE = 32
+
+DOWN_LEFT  = Position(-1,-1)
+UP_LEFT    = Position(-1,1)
+UP_RIGHT   = Position(1,1)
+DOWN_RIGHT = Position(1,-1)
+
+UP         = Position(0,1)
+RIGHT      = Position(1,0)
+DOWN       = Position(0,-1)
+LEFT       = Position(-1,0)
 
 WINDOW_W, WINDOW_H = 1024, 768
 VIEWPORT_W, VIEWPORT_H = 25, 20

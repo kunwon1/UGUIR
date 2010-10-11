@@ -19,14 +19,13 @@ class Map(object):
         self.map = []
         self.viewport = []
         self.width, self.height = width, height
-        self.playableArea = Rect(1,1,width-2,height-2)
-        self.playerX, self.playerY = 0, 0
+        self.playableArea = Rect(Position(1,1),width-2,height-2)
         self.playerPos = Position()
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.monsterGroup = pyglet.graphics.OrderedGroup(1)
         self.playerGroup = pyglet.graphics.OrderedGroup(2)
-        self.player = Player(x=0, y=0, batch=self.batch, group=self.playerGroup)
+        self.player = Player(pos=self.playerPos, batch=self.batch, group=self.playerGroup)
         
         for i in range(VIEWPORT_W):
             self.viewport.append([0]*VIEWPORT_H)
@@ -35,7 +34,7 @@ class Map(object):
         for x in range(width):
             lst = []
             for y in range(height):
-                lst.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
+                lst.append(MapCell(Position(x*SPRITE_SIZE, y*SPRITE_SIZE), self.batch, self.mapGroup))
             self.map.append(lst)
 
         bsp = BSP(self.playableArea)
@@ -48,14 +47,14 @@ class Map(object):
         lastroom = None
         for i in rooms:
             if not lastroom is None:
-                x1,y1 = lastroom.getPoint()
-                x2,y2 = i.getPoint()
-                self.randTunnel(x1,y1,x2,y2)
+                pos1 = lastroom.getPoint()
+                pos2 = i.getPoint()
+                self.randTunnel(pos1,pos2)
                 lastroom = i
             else:
-                px,py = i.getPoint()
-                self.movePlayer(px,py)
-                self.map[px+1][py+1].objects.append(Kobold(batch=self.batch, group=self.monsterGroup))
+                pos = i.getPoint()
+                self.movePlayer(pos)
+                self.map[pos.x+1][pos.y+1].objects.append(Kobold(batch=self.batch, group=self.monsterGroup))
                 lastroom = i
 
     def debugPrint(self):
@@ -71,16 +70,14 @@ class Map(object):
                     sys.stdout.write('~')
             print '\n',
 
-    def movePlayer(self, x, y):
+    def movePlayer(self, pos):
         xPx, yPx = self.player.x, self.player.y
-        newX, newY = self.playerX + x, self.playerY + y
-
-        if self.map[newX][newY].blocked:
+        newPos = Position(self.playerPos.x + pos.x, self.playerPos.y + pos.y)
+        if self.map[newPos.x][newPos.y].blocked:
             return
         else:
-            self.player.set_position(xPx + x*SPRITE_SIZE, yPx + y*SPRITE_SIZE)
-            self.playerX = newX
-            self.playerY = newY
+            self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
+            self.playerPos = newPos
     
     def initViewport(self):
         for x in range(len(self.viewport)):
@@ -92,8 +89,8 @@ class Map(object):
                                              group = self.mapGroup)
 
     def updateViewport(self, width, height):
-        startX = self.playerX - width / 2
-        startY = self.playerY - height / 2
+        startX = self.playerPos.x - width / 2
+        startY = self.playerPos.y - height / 2
         endX = startX + width
         endY = startY + height
         mapLenX = len(self.map)
@@ -119,7 +116,6 @@ class Map(object):
                 startY,endY = mapLenY - VIEWPORT_H, mapLenY
 
         for x in xrange(startX, endX):
-            yIter = 0
             for y in xrange(startY, endY):
                 self.map[x][y].visible = False
 
@@ -130,9 +126,9 @@ class Map(object):
         for x in xrange(startX, endX):
             yIter = 0
             for y in xrange(startY, endY):
-                if x == self.playerX and y == self.playerY:
+                if x == self.playerPos.x and y == self.playerPos.y:
                     playerXPx = self.viewport[xIter][yIter].x
-                    playerYPx = self.viewport[xIter][yIter].y 
+                    playerYPx = self.viewport[xIter][yIter].y
                     self.player.set_position(playerXPx,playerYPx)
                 if self.map[x][y].type == DUNGEON_WALL:
                     self.viewport[xIter][yIter].image = sheet['dungeon'][81]
@@ -152,73 +148,74 @@ class Map(object):
             xIter += 1
 
     def doFOV(self):
-        fieldOfView(self.playerX,self.playerY,
+        fieldOfView(self.playerPos.x,self.playerPos.y,
                     self.width,self.height,15,
                     self.funcVisit,self.funcBlocked)
 
     def funcVisit(self,x,y):
-        if x < 0:
-            x = 0
-        if y < 0:
-            y = 0
-        self.map[x][y].visible = True
-        self.map[x][y].discovered = True
+        pos = Position(x,y)
+        if pos.x < 0:
+            pos.x = 0
+        if pos.y < 0:
+            pos.y = 0
+        self.map[pos.x][pos.y].visible = True
+        self.map[pos.x][pos.y].discovered = True
 
     def funcBlocked(self,x,y):
         return self.map[x][y].blocked
 
     def makeRectRoom(self, rect):
-        for r in xrange(rect.x, rect.x+rect.w):
-            for n in xrange(rect.y, rect.y+rect.h):
+        for r in xrange(rect.pos.x, rect.pos.x+rect.w):
+            for n in xrange(rect.pos.y, rect.pos.y+rect.h):
                 self.map[r][n].blocked = False
                 self.map[r][n].type = DUNGEON_FLOOR
         return rect
 
-    def makeHorizTunnel(self, y, x1, x2):
-        if x1 > x2:
-            (x1,x2) = (x2,x1)
-        for x in xrange(x1, x2 + 1):
-            self.map[x][y].blocked = False
-            self.map[x][y].type = DUNGEON_FLOOR
+    def makeHorizTunnel(self, pos, x2):
+        if pos.x > x2:
+            (pos.x,x2) = (x2,pos.x)
+        for x in xrange(pos.x, x2 + 1):
+            self.map[x][pos.y].blocked = False
+            self.map[x][pos.y].type = DUNGEON_FLOOR
 
-    def makeVertTunnel(self, x, y1, y2):
-        if y1 > y2:
-            (y1,y2) = (y2,y1)
-        for y in xrange(y1, y2 + 1):
-            self.map[x][y].blocked = False
-            self.map[x][y].type = DUNGEON_FLOOR
+    def makeVertTunnel(self, pos, y2):
+        if pos.y > y2:
+            (pos.y,y2) = (y2,pos.y)
+        for y in xrange(pos.y, y2 + 1):
+            self.map[pos.x][y].blocked = False
+            self.map[pos.x][y].type = DUNGEON_FLOOR
 
-    def makeTwoLeggedTunnel(self, x1, y1, x2, y2):
+    def makeTwoLeggedTunnel(self, pos1, pos2):
         if random.randint(0,1) == 0:
-            self.makeHorizTunnel(y1, x1, x2)
-            self.makeVertTunnel(x2, y1, y2)
+            self.makeHorizTunnel(pos1, pos2.x)
+            self.makeVertTunnel(pos2, pos1.y)
         else:
-            self.makeVertTunnel(x1, y1, y2)
-            self.makeHorizTunnel(y2, x1, x2)
+            self.makeVertTunnel(pos1, pos2.y)
+            self.makeHorizTunnel(pos2, pos1.x)
 
-    def makeDiagTunnel(self, x1, y1, x2, y2):
+    def makeDiagTunnel(self, pos1, pos2):
         '''see bresenham_line.py for license'''
-
-        steep = abs(y2 - y1) > abs(x2 - x1)
+        self.firstDoor, self.secondDoor = False, False 
+        steep = abs(pos2.y - pos1.y) > abs(pos2.x - pos1.x)
         if steep:
-            x1, y1 = y1, x1  
-            x2, y2 = y2, x2
+            pos1.x, pos1.y = pos1.y, pos1.x  
+            pos2.x, pos2.y = pos2.y, pos2.x
 
-        if x1 > x2:
-            x1, x2 = x2, x1
-            y1, y2 = y2, y1
+        if pos1.x > pos2.x:
+            pos1.x, pos2.x = pos2.x, pos1.x
+            pos1.y, pos2.y = pos2.y, pos1.y
 
-        if y1 < y2: 
+        if pos1.y < pos2.y: 
             ystep = 1
         else:
             ystep = -1
 
-        deltax = x2 - x1
-        deltay = abs(y2 - y1)
+        deltax = pos2.x - pos1.x
+        deltay = abs(pos2.y - pos1.y)
         error = -deltax / 2
-        y = y1
+        y = pos1.y
 
-        for x in range(x1, x2 + 1):
+        for x in range(pos1.x, pos2.x + 1):
             if steep:
                 self.map[y][x].blocked = False
                 self.map[y][x].type = DUNGEON_FLOOR
@@ -230,11 +227,11 @@ class Map(object):
                 y = y + ystep
                 error = error - deltax
 
-    def randTunnel(self, x1, y1, x2, y2):
+    def randTunnel(self, pos1, pos2):
         if random.randint(0,10) > 3:
-            self.makeTwoLeggedTunnel(x1,y1,x2,y2)
+            self.makeTwoLeggedTunnel(pos1,pos2)
         else:
-            self.makeDiagTunnel(x1,y1,x2,y2)
+            self.makeDiagTunnel(pos1,pos2)
 
     def makeRandRoom(self, rect):
         subFromW = random.randint(1,5)
@@ -244,60 +241,58 @@ class Map(object):
         addToY = subFromH / 2
         subFromH = subFromH - addToY
         
-        x = rect.x + addToX
-        y = rect.y + addToY
         w = rect.w - subFromW
         h = rect.h - subFromH
         
         if  w > 3 and h > 3:
-            return self.makeRectRoom(Rect(x,y,w,h))
+            newPos = Position(rect.pos.x+addToX, rect.pos.y+addToY)
+            return self.makeRectRoom(Rect(newPos,w,h))
         else:
             return self.makeRectRoom(rect)
 
 class Rect(object):
-    def __init__(self, x, y, w, h):
-        self.x = x
-        self.y = y
+    def __init__(self, pos, w, h):
+        self.pos = pos
         self.w = w
         self.h = h
 
     def getPoint(self):
-        randX = random.randint(self.x+1, self.x+self.w-1)
-        randY = random.randint(self.y+1, self.y+self.h-1)
-        return (randX,randY)
+        randX = random.randint(self.pos.x+1, self.pos.x+self.w-1)
+        randY = random.randint(self.pos.y+1, self.pos.y+self.h-1)
+        return Position(randX,randY)
 
     def checkIntersect(self, other):
-        for x in xrange(other.x, other.x + other.w + 1):
-            for y in xrange(other.y, other.y + other.h + 1):
-                if self.checkPointIntersect(x, y):
+        for x in xrange(other.pos.x, other.pos.x + other.w + 1):
+            for y in xrange(other.pos.y, other.pos.y + other.h + 1):
+                if self.checkPointIntersect(Position(x, y)):
                     return True
         return False
 
-    def checkPointIntersect(self, x, y):
-        if self.x <= x <= self.x + self.w:
-            if self.y <= y <= self.y + self.h:
+    def checkPointIntersect(self, otherPos):
+        if self.pos.x <= otherPos.x <= self.pos.x + self.w:
+            if self.pos.y <= otherPos.y <= self.pos.y + self.h:
                 return True
         return False
 
-    def splitRect(self, x=None, y=None):
-        if x is not None and y is not None:
-            raise ValueError('splitRect must be called with only one arg')
+    def splitRect(self, splitPos):
+        if not splitPos.x == 0 and not splitPos.y == 0:
+            raise ValueError('splitRect must be called with either x or y set to 0')
             return
-        if x is not None:
-            leftSize = x - self.x
+        if not splitPos.x == 0:
+            leftSize = splitPos.x - self.pos.x
             rightSize = self.w - leftSize - 1
-            leftRect = Rect(self.x, self.y, leftSize, self.h)
-            rightRect = Rect(x+1, self.y, rightSize, self.h)
+            leftRect = Rect(self.pos, leftSize, self.h)
+            rightRect = Rect(Position(splitPos.x+1, self.pos.y), rightSize, self.h)
             return (leftRect, rightRect)
         else:
-            bottomSize = y - self.y 
+            bottomSize = splitPos.y - self.pos.y 
             topSize = self.h - bottomSize - 1
-            bottomRect = Rect(self.x, self.y, self.w, bottomSize)
-            topRect = Rect(self.x, y+1, self.w, topSize)
+            bottomRect = Rect(self.pos, self.w, bottomSize)
+            topRect = Rect(Position(self.pos.x, splitPos.y+1), self.w, topSize)
             return (bottomRect, topRect)
 
 class MapCell:
-    def __init__(self, xCells, yCells, batch,
+    def __init__(self, pos, batch,
                  group, blocked=True, visible=True,
                  discovered=False):
         self.blocked = blocked
@@ -305,11 +300,11 @@ class MapCell:
         self.discovered = discovered
         self.batch = batch
         self.group = group
-        self.xCells = xCells
-        self.yCells = yCells
-        self.xPx = self.xCells * SPRITE_SIZE
-        self.yPx = self.yCells * SPRITE_SIZE
+        self.pos = pos
+        self.xPx = self.pos.x * SPRITE_SIZE
+        self.yPx = self.pos.y * SPRITE_SIZE
         self.type = DUNGEON_WALL
+        self.door = None
         self.objects = []
 
 class BSP:
@@ -321,19 +316,19 @@ class BSP:
 
     def splitRand(self, rect):
         if random.randint(0,1) == 0:  # split on x
-            min = rect.x + MINIMUM_ROOM_SIZE + 1
-            max = rect.x + rect.w - MINIMUM_ROOM_SIZE - 1
+            min = rect.pos.x + MINIMUM_ROOM_SIZE + 1
+            max = rect.pos.x + rect.w - MINIMUM_ROOM_SIZE - 1
             if not max > min:
                 return [rect]
             randx = random.randint(min,max)
-            return rect.splitRect(x=randx)
+            return rect.splitRect(Position(randx,0))
         else:                           #split on y
-            min = rect.y + MINIMUM_ROOM_SIZE + 1
-            max = rect.y + rect.h - MINIMUM_ROOM_SIZE - 1
+            min = rect.pos.y + MINIMUM_ROOM_SIZE + 1
+            max = rect.pos.y + rect.h - MINIMUM_ROOM_SIZE - 1
             if not max > min:
                 return [rect]
             randy = random.randint(min,max)
-            return rect.splitRect(y=randy)
+            return rect.splitRect(Position(0,randy))
 
     def doBSP(self):
         iter = 0
@@ -346,14 +341,6 @@ class BSP:
             self.rects = newRects
             iter += 1
                 
-def isNearEdge(x,y):
-    lowPass = CLOSE_TO_EDGE
-    highPassX = VIEWPORT_W * SPRITE_SIZE - CLOSE_TO_EDGE
-    highPassY = VIEWPORT_H * SPRITE_SIZE - CLOSE_TO_EDGE
-    if lowPass <= x <= highPassX:
-        if lowPass <= y <= highPassY:
-            return False
-    return True
 
 if __name__ == '__main__':
     import sys
@@ -366,4 +353,3 @@ if __name__ == '__main__':
             elif map.map[x][y].type == DUNGEON_FLOOR:
                 sys.stdout.write(' ')
         print '\n',
-        

@@ -23,35 +23,37 @@ outline.set_position(OUTLINE_X, OUTLINE_Y)
 @window.event
 def on_text_motion(motion):
     if motion == MOTION_UP:
-        map.movePlayer(0,1)
+        map.movePlayer(UP)
     elif motion == MOTION_RIGHT:
-        map.movePlayer(1,0)
+        map.movePlayer(RIGHT)
     elif motion == MOTION_DOWN:
-        map.movePlayer(0,-1)
+        map.movePlayer(DOWN)
     elif motion == MOTION_LEFT:
-        map.movePlayer(-1,0)
+        map.movePlayer(LEFT)
     else:
         pass
 
 @window.event
 def on_key_press(symbol, modifiers):
     if symbol == NUM_1:
-        map.movePlayer(-1,-1)
+        map.movePlayer(DOWN_LEFT)
     elif symbol == NUM_7:
-        map.movePlayer(-1,1)
+        map.movePlayer(UP_LEFT)
     elif symbol == NUM_9:
-        map.movePlayer(1,1)
+        map.movePlayer(UP_RIGHT)
     elif symbol == NUM_3:
-        map.movePlayer(1,-1)
+        map.movePlayer(DOWN_RIGHT)
 
     elif symbol == NUM_8:
-        map.movePlayer(0,1)
+        map.movePlayer(UP)
     elif symbol == NUM_6:
-        map.movePlayer(1,0)
+        map.movePlayer(RIGHT)
     elif symbol == NUM_2:
-        map.movePlayer(0,-1)
+        map.movePlayer(DOWN)
     elif symbol == NUM_4:
-        map.movePlayer(-1,0)
+        map.movePlayer(LEFT)
+    else:
+        pass
 
 @window.event
 def on_draw():
