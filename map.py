@@ -299,10 +299,6 @@ class MapCell:
         self.type = DUNGEON_WALL
         self.objects = []
 
-    def setVisible(self):
-        print 'setting visible for %i,%i' % (self.xCells, self.yCells)
-        self.visible = True
-
 class BSP:
     def __init__(self, firstRect):
         self.firstRect = firstRect
