@@ -18,31 +18,39 @@ class Position(object):
 
     def moveUp(self):
         self.y += 1
+        return self
 
     def moveDown(self):
         self.y -= 1
+        return self
         
     def moveLeft(self):
         self.x -= 1
+        return self
         
     def moveRight(self):
         self.x += 1
+        return self
 
     def moveUpLeft(self):
         self.y += 1
         self.x -= 1
+        return self
 
     def moveUpRight(self):
         self.y += 1
         self.x += 1
+        return self
 
     def moveDownLeft(self):
         self.y -= 1
         self.x -= 1
+        return self
 
     def moveDownRight(self):
         self.y -= 1
         self.x += 1
+        return self
 
 
 if __name__ == "__main__":

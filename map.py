@@ -34,7 +34,7 @@ class Map(object):
         for x in range(width):
             lst = []
             for y in range(height):
-                lst.append(MapCell(Position(x*SPRITE_SIZE, y*SPRITE_SIZE), self.batch, self.mapGroup))
+                lst.append(MapCell(Position(x, y), self.batch, self.mapGroup))
             self.map.append(lst)
 
         bsp = BSP(self.playableArea)
@@ -57,6 +57,9 @@ class Map(object):
                 self.map[pos.x+1][pos.y+1].objects.append(Kobold(batch=self.batch, group=self.monsterGroup))
                 lastroom = i
 
+    def getCellAtPos(self, pos):
+        return self.map[pos.x][pos.y]
+
     def debugPrint(self):
         import sys
         
@@ -74,6 +77,9 @@ class Map(object):
         xPx, yPx = self.player.x, self.player.y
         newPos = Position(self.playerPos.x + pos.x, self.playerPos.y + pos.y)
         if self.map[newPos.x][newPos.y].blocked:
+            if self.map[newPos.x][newPos.y].type == DUNGEON_DOOR:
+                self.map[newPos.x][newPos.y].type = OPEN_DOOR
+                self.map[newPos.x][newPos.y].blocked = False
             return
         else:
             self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
@@ -134,6 +140,10 @@ class Map(object):
                     self.viewport[xIter][yIter].image = sheet['dungeon'][81]
                 elif self.map[x][y].type == DUNGEON_FLOOR:
                     self.viewport[xIter][yIter].image = sheet['ground'][170]
+                elif self.map[x][y].type == DUNGEON_DOOR:
+                    self.viewport[xIter][yIter].image = sheet['dungeon'][84]
+                elif self.map[x][y].type == OPEN_DOOR:
+                    self.viewport[xIter][yIter].image = sheet['dungeon'][85]
                 if self.map[x][y].discovered == False:
                     self.viewport[xIter][yIter].opacity = 0
                 elif self.map[x][y].visible == False:
@@ -214,14 +224,28 @@ class Map(object):
         deltay = abs(pos2.y - pos1.y)
         error = -deltax / 2
         y = pos1.y
-
+        
+        iter, flag = 0,0
+        
         for x in range(pos1.x, pos2.x + 1):
             if steep:
                 self.map[y][x].blocked = False
                 self.map[y][x].type = DUNGEON_FLOOR
+                if (iter > 2 and flag == 0) or (iter > 6 and flag == 1):
+                    if self.map[y][x].checkDoorPlacement(self) == True:
+                        self.map[y][x].type = DUNGEON_DOOR
+                        self.map[y][x].blocked = True
+                        flag += 1
+                iter += 1
             else:
                 self.map[x][y].blocked = False
-                self.map[x][y].type = DUNGEON_FLOOR                
+                self.map[x][y].type = DUNGEON_FLOOR
+                if (iter > 2 and flag == 0) or (iter > 6 and flag == 1):
+                    if self.map[x][y].checkDoorPlacement(self) == True:
+                        self.map[x][y].type = DUNGEON_DOOR
+                        self.map[x][y].blocked = True
+                        flag += 1
+                iter += 1
             error = error + deltay
             if error > 0:
                 y = y + ystep
@@ -304,8 +328,42 @@ class MapCell:
         self.xPx = self.pos.x * SPRITE_SIZE
         self.yPx = self.pos.y * SPRITE_SIZE
         self.type = DUNGEON_WALL
-        self.door = None
         self.objects = []
+
+    def checkDoorPlacement(self, gameMap):
+        iterPos = Position(self.pos.x,self.pos.y)
+        results = []
+        results.append(self.checkCell(gameMap, iterPos.moveUp()))
+        results.append(self.checkCell(gameMap, iterPos.moveDown()))
+        results.append(self.checkCell(gameMap, iterPos.moveLeft()))
+        results.append(self.checkCell(gameMap, iterPos.moveRight()))
+        results.append(self.checkCell(gameMap, iterPos.moveUpLeft()))
+        results.append(self.checkCell(gameMap, iterPos.moveUpRight()))
+        results.append(self.checkCell(gameMap, iterPos.moveDownLeft()))
+        results.append(self.checkCell(gameMap, iterPos.moveDownRight()))
+        
+        print results
+        
+        myself = self.checkCell(gameMap, self.pos)
+        if myself == DUNGEON_DOOR:
+            return False
+        
+        found = [0,0,0,0] 
+        for i in results:
+            found[i] += 1
+        
+        if found[DUNGEON_FLOOR] > 2:
+            if found[DUNGEON_WALL] > 2:
+                return True
+        return False
+            
+
+    def checkCell(self, gameMap, pos):
+        try:
+            cell = gameMap.getCellAtPos(pos)
+        except IndexError:
+            return OUT_OF_BOUNDS
+        return cell.type
 
 class BSP:
     def __init__(self, firstRect):
@@ -352,4 +410,6 @@ if __name__ == '__main__':
                 sys.stdout.write('#')
             elif map.map[x][y].type == DUNGEON_FLOOR:
                 sys.stdout.write(' ')
+            elif map.map[x][y].type == DUNGEON_DOOR:
+                sys.stdout.write('A')
         print '\n',
