@@ -186,10 +186,15 @@ class Map(object):
             (pos.x,x2) = (x2,pos.x)
         flag = 0
         for x in xrange(pos.x, x2 + 1):
+            if self.map[x][pos.y].type == DUNGEON_DOOR:
+                    continue
+            doorPlacement = self.map[x][pos.y].checkDoorPlacement(self)
+            if doorPlacement is None:
+                continue
             self.map[x][pos.y].blocked = False
             self.map[x][pos.y].type = DUNGEON_FLOOR
-            if (flag == 0):
-                if self.map[x][pos.y].checkDoorPlacement(self) == True:
+            if flag < MAX_DOORS_PER_TUNNEL:
+                if doorPlacement == True:
                     self.map[x][pos.y].type = DUNGEON_DOOR
                     self.map[x][pos.y].blocked = True
                     flag += 1
@@ -199,10 +204,13 @@ class Map(object):
             (pos.y,y2) = (y2,pos.y)
         flag = 0
         for y in xrange(pos.y, y2 + 1):
+            if self.map[pos.x][y].type == DUNGEON_DOOR:
+                    continue
+            doorPlacement = self.map[pos.x][y].checkDoorPlacement(self)
             self.map[pos.x][y].blocked = False
             self.map[pos.x][y].type = DUNGEON_FLOOR
-            if (flag == 0):
-                if self.map[pos.x][y].checkDoorPlacement(self) == True:
+            if flag < MAX_DOORS_PER_TUNNEL:
+                if doorPlacement == True:
                     self.map[pos.x][y].type = DUNGEON_DOOR
                     self.map[pos.x][y].blocked = True
                     flag += 1
@@ -241,19 +249,25 @@ class Map(object):
         
         for x in range(pos1.x, pos2.x + 1):
             if steep:
+                if self.map[y][x].type == DUNGEON_DOOR:
+                    continue
+                doorPlacement = self.map[y][x].checkDoorPlacement(self)
                 self.map[y][x].blocked = False
                 self.map[y][x].type = DUNGEON_FLOOR
-                if (iter > 2 and flag == 0) or (iter > 6 and flag == 1):
-                    if self.map[y][x].checkDoorPlacement(self) == True:
+                if (iter > 2 and (flag < MAX_DOORS_PER_TUNNEL)) or (iter > 6 and (flag < MAX_DOORS_PER_TUNNEL)):
+                    if doorPlacement == True:
                         self.map[y][x].type = DUNGEON_DOOR
                         self.map[y][x].blocked = True
                         flag += 1
                 iter += 1
             else:
+                if self.map[x][y].type == DUNGEON_DOOR:
+                    continue
+                doorPlacement = self.map[x][y].checkDoorPlacement(self)
                 self.map[x][y].blocked = False
                 self.map[x][y].type = DUNGEON_FLOOR
-                if (iter > 2 and flag == 0) or (iter > 6 and flag == 1):
-                    if self.map[x][y].checkDoorPlacement(self) == True:
+                if (iter > 2 and flag < MAX_DOORS_PER_TUNNEL) or (iter > 6 and flag < MAX_DOORS_PER_TUNNEL):
+                    if doorPlacement == True:
                         self.map[x][y].type = DUNGEON_DOOR
                         self.map[x][y].blocked = True
                         flag += 1
@@ -345,7 +359,7 @@ class MapCell:
     def checkDoorPlacement(self, gameMap):
         for r in gameMap.rooms:
             if r.checkPointIntersect(self.pos):
-                return
+                return False
 
         iterPos = Position(self.pos.x,self.pos.y)
         results = []
@@ -358,28 +372,32 @@ class MapCell:
         leftResult = self.checkCell(gameMap, iterPos.moveUp())
         results.append(self.checkCell(gameMap, iterPos.moveUp()))
 
-        if not (topResult == 0 and bottomResult == 0):
-            if not (leftResult == 0 and rightResult == 0):
+        if topResult == DUNGEON_DOOR and bottomResult == DUNGEON_WALL:
+            return True
+        if bottomResult == DUNGEON_DOOR and topResult == DUNGEON_WALL:
+            return True
+        if leftResult == DUNGEON_DOOR and rightResult == DUNGEON_WALL:
+            return True
+        if rightResult == DUNGEON_DOOR and leftResult == DUNGEON_WALL:
+            return True 
+
+        if not topResult == DUNGEON_WALL and not bottomResult == DUNGEON_WALL:
+            if not leftResult == DUNGEON_WALL and not rightResult == DUNGEON_WALL:
                 return False
         
         results.append(topResult)
         results.append(bottomResult)
         results.append(leftResult)
         results.append(rightResult)
-
-        myself = self.checkCell(gameMap, self.pos)
-        if myself == DUNGEON_DOOR:
-            return False
         
         found = [0,0,0,0] 
         for i in results:
             found[i] += 1
 
-        if found[1] > 2:
-            if found[0] > 1:
+        if found[DUNGEON_FLOOR] > 1:
+            if found[DUNGEON_WALL] > 2:
                 return True
         return False
-            
 
     def checkCell(self, gameMap, pos):
         try:
