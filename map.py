@@ -5,21 +5,23 @@ pyglet.resource.path = ['res', 'res/images',]
 pyglet.resource.reindex()
 
 import random
+random.seed()
 
 from constants import *
 from spritesheet import sheet
 from player import Player
 from monsters import *
 from fov import fieldOfView
+from position import Position
 
-class Map:
+class Map(object):
     def __init__(self, width=DEFAULT_MAP_CELLS_X, height=DEFAULT_MAP_CELLS_Y):
-        random.seed()
         self.map = []
         self.viewport = []
-        (self.playerX, self.playerY) = (0,0)
         self.width, self.height = width, height
         self.playableArea = Rect(1,1,width-2,height-2)
+        self.playerX, self.playerY = 0, 0
+        self.playerPos = Position()
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.monsterGroup = pyglet.graphics.OrderedGroup(1)
@@ -31,11 +33,11 @@ class Map:
         self.initViewport()
 
         for x in range(width):
-            list = []
+            lst = []
             for y in range(height):
-                list.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
-            self.map.append(list)
-        
+                lst.append(MapCell(x*SPRITE_SIZE, y*SPRITE_SIZE, self.batch, self.mapGroup))
+            self.map.append(lst)
+
         bsp = BSP(self.playableArea)
         rooms = []
         for r in  bsp.rects:
@@ -70,19 +72,24 @@ class Map:
             print '\n',
 
     def movePlayer(self, x, y):
-        (xPx, yPx) = (self.player.x, self.player.y)
-        (newX, newY) = (self.playerX + x, self.playerY + y)
-        if self.map[newX][newY].blocked == True:
+        xPx, yPx = self.player.x, self.player.y
+        newX, newY = self.playerX + x, self.playerY + y
+
+        if self.map[newX][newY].blocked:
             return
         else:
             self.player.set_position(xPx + x*SPRITE_SIZE, yPx + y*SPRITE_SIZE)
             self.playerX = newX
             self.playerY = newY
-
+    
     def initViewport(self):
         for x in range(len(self.viewport)):
             for y in range(len(self.viewport[x])):
-                self.viewport[x][y] = Sprite(sheet['dungeon'][81], x=x * SPRITE_SIZE, y=y * SPRITE_SIZE, batch = self.batch, group = self.mapGroup)
+                self.viewport[x][y] = Sprite(sheet['dungeon'][81], 
+                                             x=x * SPRITE_SIZE, 
+                                             y=y * SPRITE_SIZE, 
+                                             batch = self.batch, 
+                                             group = self.mapGroup)
 
     def updateViewport(self, width, height):
         startX = self.playerX - width / 2
@@ -247,7 +254,7 @@ class Map:
         else:
             return self.makeRectRoom(rect)
 
-class Rect:
+class Rect(object):
     def __init__(self, x, y, w, h):
         self.x = x
         self.y = y

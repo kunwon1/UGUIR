@@ -5,6 +5,8 @@ pyglet.resource.path = ['res', 'res/images',]
 pyglet.resource.reindex()
 
 from spritesheet import *
+
+# map is a built-in function map(func, sequence) -> [func(seq0), func(seq1) ..]
 from map import *
 from constants import *
 from msgbox import msgBox
