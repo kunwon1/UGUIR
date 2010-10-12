@@ -23,35 +23,35 @@ outline.set_position(OUTLINE_X, OUTLINE_Y)
 @window.event
 def on_text_motion(motion):
     if motion == MOTION_UP:
-        map.movePlayer(UP)
+        map.player.moveOrAttack(map, UP)
     elif motion == MOTION_RIGHT:
-        map.movePlayer(RIGHT)
+        map.player.moveOrAttack(map, RIGHT)
     elif motion == MOTION_DOWN:
-        map.movePlayer(DOWN)
+        map.player.moveOrAttack(map, DOWN)
     elif motion == MOTION_LEFT:
-        map.movePlayer(LEFT)
+        map.player.moveOrAttack(map, LEFT)
     else:
         pass
 
 @window.event
 def on_key_press(symbol, modifiers):
     if symbol == NUM_1:
-        map.movePlayer(DOWN_LEFT)
+        map.player.moveOrAttack(map, DOWN_LEFT)
     elif symbol == NUM_7:
-        map.movePlayer(UP_LEFT)
+        map.player.moveOrAttack(map, UP_LEFT)
     elif symbol == NUM_9:
-        map.movePlayer(UP_RIGHT)
+        map.player.moveOrAttack(map, UP_RIGHT)
     elif symbol == NUM_3:
-        map.movePlayer(DOWN_RIGHT)
+        map.player.moveOrAttack(map, DOWN_RIGHT)
 
     elif symbol == NUM_8:
-        map.movePlayer(UP)
+        map.player.moveOrAttack(map, UP)
     elif symbol == NUM_6:
-        map.movePlayer(RIGHT)
+        map.player.moveOrAttack(map, RIGHT)
     elif symbol == NUM_2:
-        map.movePlayer(DOWN)
+        map.player.moveOrAttack(map, DOWN)
     elif symbol == NUM_4:
-        map.movePlayer(LEFT)
+        map.player.moveOrAttack(map, LEFT)
     else:
         pass
 

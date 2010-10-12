@@ -1,4 +1,5 @@
 from priorityqueueset import PriorityQueueSet
+import time
 
 class findPath(object):
     def __init__(self,map,startPos,endPos):
@@ -72,6 +73,8 @@ class PathFinder(object):
                 and returns the numeric heuristic estimation of 
                 the cost of reaching the goal from the point.
         """
+        self.t1 = time.clock()
+
         self.successors = successors
         self.move_cost = move_cost
         self.heuristic_to_goal = heuristic_to_goal
@@ -101,6 +104,12 @@ class PathFinder(object):
             # Remove and get the node with the lowest f_score from 
             # the open set            
             #
+            
+            if len(open_set) > 100:
+                t2 = time.clock()
+                timeWasted = t2 - self.t1 
+                raise ValueError('path too long, wasted %f sec' % timeWasted)
+            
             curr_node = open_set.pop_smallest()
             
             if curr_node.coord == goal:

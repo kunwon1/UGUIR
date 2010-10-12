@@ -64,7 +64,7 @@ class Map(object):
                 lastroom = i
             else:
                 pos = i.getPoint()
-                self.movePlayer(pos)
+                self.player.moveOrAttack(self,pos)
                 self.map[pos.x+1][pos.y+1].objects.append(
                     Kobold(Position(pos.x+1,pos.y+1),
                            self.batch, self.monsterGroup)
@@ -86,19 +86,6 @@ class Map(object):
                 elif self.map[x][y].type == DUNGEON_FLOOR:
                     sys.stdout.write('~')
             print '\n',
-
-    def movePlayer(self, pos):
-        xPx, yPx = self.player.x, self.player.y
-        newPos = Position(self.player.pos.x + pos.x, self.player.pos.y + pos.y)
-        if self.map[newPos.x][newPos.y].blockedByTerrain:
-            if self.map[newPos.x][newPos.y].type == DUNGEON_DOOR:
-                self.map[newPos.x][newPos.y].type = OPEN_DOOR
-                self.map[newPos.x][newPos.y].blockedByTerrain = False
-            return
-        else:
-            self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
-            self.player.pos = newPos
-            self.objectUpdateRequired = 1
     
     def initViewport(self):
         for x in range(len(self.viewport)):
@@ -181,6 +168,8 @@ class Map(object):
                         obj.visible = True
                     else:
                         obj.visible = False
+                    if obj.blocked == True:
+                        self.map[x][y].blockedByObject = True
                 yIter += 1
             xIter += 1
 
@@ -196,10 +185,9 @@ class Map(object):
         self.getCellAtPos(self.player.pos).blockedByObject = True
         for x in xrange(startObjectProc.x, endObjectProc.x):
             for y in xrange(startObjectProc.y, endObjectProc.y):
+                self.map[x][y].blockedByObject = False
                 for o in self.map[x][y].objects:
                     o.updateState(self)
-                    if o.blocked == True:
-                        self.map[x][y].blockedByObject = True
 
     def funcVisit(self,x,y):
         pos = Position(x,y)
