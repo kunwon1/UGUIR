@@ -1,6 +1,26 @@
 from priorityqueueset import PriorityQueueSet
 import time
 
+
+def moveCost(pos1,pos2):
+    if not pos1.x == pos2.x:
+        if not pos1.y == pos2.y:
+            return 12
+        return 9
+    return 8
+
+def manhattan(pos1,pos2):
+    minX = min(pos1.x,pos2.x)
+    maxX = max(pos1.x,pos2.x)
+    minY = min(pos1.y,pos2.y)
+    maxY = max(pos1.y,pos2.y)
+    
+    xLen = maxX - minX
+    yLen = maxY - minY
+    
+    return (xLen+yLen)*10
+
+
 class findPath(object):
     def __init__(self,map,startPos,endPos):
         self.startPos = startPos
@@ -15,24 +35,6 @@ class findPath(object):
                     or  n == endPos:
                         l.append(n)
             return l
-        
-        def moveCost(pos1,pos2):
-            if not pos1.x == pos2.x:
-                if not pos1.y == pos2.y:
-                    return 10
-                return 9
-            return 8
-
-        def manhattan(pos1,pos2):
-            minX = min(pos1.x,pos2.x)
-            maxX = max(pos1.x,pos2.x)
-            minY = min(pos1.y,pos2.y)
-            maxY = max(pos1.y,pos2.y)
-            
-            xLen = maxX - minX
-            yLen = maxY - minY
-            
-            return (xLen+yLen)*10
         
         PF = PathFinder(getNeighbors,moveCost,manhattan)
         iterable = PF.compute_path(startPos,endPos)

@@ -1,7 +1,7 @@
 import pyglet.text
 from constants import *
 
-class msgBox:
+class msgBox(object):
     def __init__(self):
         self.doc = pyglet.text.decode_text('Hello, World. Welcome to my game.')
         l = len(self.doc.text)

@@ -1,6 +1,6 @@
 from constants import *
 
-class MapCell:
+class MapCell(object):
     def __init__(self, pos, batch,
                  group, blockedByTerrain=True,
                  blockedByObject=False, visible=True,

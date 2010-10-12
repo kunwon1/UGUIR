@@ -1,7 +1,7 @@
 from constants import *
 import random
 
-class BSP:
+class BSP(object):
     def __init__(self, firstRect):
         self.firstRect = firstRect
         self.rects = []

@@ -2,7 +2,7 @@ from constants import bonus
 
 from random import randint
 
-class Stats:
+class Stats(object):
     def __init__(self, hpRoll=10,
                  Str=12, Dex=12,
                  Con=12, Int=12,
