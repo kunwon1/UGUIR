@@ -14,6 +14,8 @@ class Position(object):
         return str((self.x,self.y))
 
     def __eq__(self, other):
+        if not isinstance(other, Position):
+            return False
         return self.x == other.x and self.y == other.y
 
     def moveUp(self):

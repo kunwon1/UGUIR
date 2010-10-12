@@ -5,10 +5,11 @@ from random import randint
 from spritesheet import sheet
 from fighterstats import Stats
 from position import Position
+from pathfinder import findPath
 
 class Monster(Sprite):
     def __init__(self, img,
-             pos=Position(),
+             pos=None,
              stats=Stats(),
              x=0, y=0,
              blend_src=pyglet.gl.GL_SRC_ALPHA,
@@ -16,15 +17,42 @@ class Monster(Sprite):
              batch=None,
              group=None,
              usage='dynamic'):
+        self.pos = pos
         self.stats = stats
         self.blocked = True
+        self.oldPos = pos
+        self.playerOldPos = None
+        self.currentPath = []
         Sprite.__init__(self, img, x, y, blend_src, blend_dest, batch, group, usage)
 
+    def updateState(self, map):
+        print 'foo'
+        print self.pos
+        mapPos = map.getCellAtPos(self.pos)
+        if mapPos.visible and not self.playerOldPos == map.playerPos:
+            pFinder = findPath(map,self.pos,map.playerPos)
+            pIter = pFinder.iter
+            pIter.next()
+            for p in pIter:
+                self.currentPath.append(p)
+            self.playerOldPos = map.playerPos
+        try:
+            next = self.currentPath.pop(0)
+        except IndexError:
+            return
+        mapPos.objects.remove(self)
+        map.getCellAtPos(next).objects.append(self)
+        lastMapPos = map.getCellAtPos(self.oldPos)
+        lastMapPos.blocked = False
+        self.visible = True
+        print "curpos:", self.pos
+        
+        self.oldPos = self.pos
+        self.pos = next
+
 class Kobold(Monster):
-    def __init__(self, pos=None,
-                 x=0, y=0,
-                 batch=None,
-                 group=None):
+    def __init__(self, pos, batch, group,
+                 x=0, y=0):
 
         Str = randint(7,10)
         Dex = randint(12,16)

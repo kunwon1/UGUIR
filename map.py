@@ -67,9 +67,8 @@ class Map(object):
                 pos = i.getPoint()
                 self.movePlayer(pos)
                 self.map[pos.x+1][pos.y+1].objects.append(
-                    Kobold(batch=self.batch,
-                           group=self.monsterGroup,
-                           pos=Position(pos.x+1,pos.y+1))
+                    Kobold(Position(pos.x+1,pos.y+1),
+                           self.batch, self.monsterGroup)
                     )
                 lastroom = i
 
@@ -100,6 +99,7 @@ class Map(object):
         else:
             self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
             self.playerPos = newPos
+            self.doObjectUpdate = 1
     
     def initViewport(self):
         for x in range(len(self.viewport)):
@@ -143,12 +143,22 @@ class Map(object):
 
     def updateViewport(self, width, height):
         startPos,endPos = self.getViewportPos(width,height)
-
+        startObjectProc,endObjectProc = self.getViewportPos(width + width/2, height + height/2)
+        
         for x in xrange(startPos.x, endPos.x):
             for y in xrange(startPos.y, endPos.y):
                 self.map[x][y].visible = False
 
         self.doFOV()
+
+        self.getCellAtPos(self.playerPos).blocked = True
+                
+        if self.doObjectUpdate == 1:
+            self.doObjectUpdate = 0
+            for x in xrange(startObjectProc.x, endObjectProc.x):
+                for y in xrange(startObjectProc.y, endObjectProc.y):
+                    for o in self.map[x][y].objects:
+                        o.updateState(self)
 
         xIter = 0
 
@@ -176,6 +186,7 @@ class Map(object):
                 for obj in self.map[x][y].objects:
                     if self.map[x][y].discovered == True and self.map[x][y].visible == True:
                         obj.set_position(xIter*32,yIter*32)
+                        print "obj pos: %i,%i" % (obj.x,obj.y)
                         obj.visible = True
                         if obj.blocked is True:
                             self.map[x][y].blocked = True
