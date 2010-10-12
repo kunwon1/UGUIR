@@ -29,13 +29,13 @@ class Monster(Sprite):
         print 'foo'
         print self.pos
         mapPos = map.getCellAtPos(self.pos)
-        if mapPos.visible and not self.playerOldPos == map.playerPos:
-            pFinder = findPath(map,self.pos,map.playerPos)
+        if mapPos.visible and not self.playerOldPos == map.player.pos:
+            pFinder = findPath(map,self.pos,map.player.pos)
             pIter = pFinder.iter
             pIter.next()
             for p in pIter:
                 self.currentPath.append(p)
-            self.playerOldPos = map.playerPos
+            self.playerOldPos = map.player.pos
         try:
             next = self.currentPath.pop(0)
         except IndexError:

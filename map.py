@@ -23,12 +23,11 @@ class Map(object):
         self.viewport = []
         self.width, self.height = width, height
         self.playableArea = Rect(Position(1,1),width-2,height-2)
-        self.playerPos = Position()
         self.batch = pyglet.graphics.Batch()
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.monsterGroup = pyglet.graphics.OrderedGroup(1)
         self.playerGroup = pyglet.graphics.OrderedGroup(2)
-        self.player = Player(pos=self.playerPos, batch=self.batch, group=self.playerGroup)
+        self.player = Player(pos=Position(), batch=self.batch, group=self.playerGroup)
         
         for i in range(VIEWPORT_W):
             self.viewport.append([0]*VIEWPORT_H)
@@ -90,7 +89,7 @@ class Map(object):
 
     def movePlayer(self, pos):
         xPx, yPx = self.player.x, self.player.y
-        newPos = Position(self.playerPos.x + pos.x, self.playerPos.y + pos.y)
+        newPos = Position(self.player.pos.x + pos.x, self.player.pos.y + pos.y)
         if self.map[newPos.x][newPos.y].blocked:
             if self.map[newPos.x][newPos.y].type == DUNGEON_DOOR:
                 self.map[newPos.x][newPos.y].type = OPEN_DOOR
@@ -98,7 +97,7 @@ class Map(object):
             return
         else:
             self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
-            self.playerPos = newPos
+            self.player.pos = newPos
             self.doObjectUpdate = 1
     
     def initViewport(self):
@@ -111,8 +110,8 @@ class Map(object):
                                              group = self.mapGroup)
 
     def getViewportPos(self,width,height):
-        startX = self.playerPos.x - width / 2
-        startY = self.playerPos.y - height / 2
+        startX = self.player.pos.x - width / 2
+        startY = self.player.pos.y - height / 2
         endX = startX + width
         endY = startY + height
         mapLenX = len(self.map)
@@ -151,7 +150,7 @@ class Map(object):
 
         self.doFOV()
 
-        self.getCellAtPos(self.playerPos).blocked = True
+        self.getCellAtPos(self.player.pos).blocked = True
                 
         if self.doObjectUpdate == 1:
             self.doObjectUpdate = 0
@@ -165,7 +164,7 @@ class Map(object):
         for x in xrange(startPos.x, endPos.x):
             yIter = 0
             for y in xrange(startPos.y, endPos.y):
-                if x == self.playerPos.x and y == self.playerPos.y:
+                if x == self.player.pos.x and y == self.player.pos.y:
                     playerXPx = self.viewport[xIter][yIter].x
                     playerYPx = self.viewport[xIter][yIter].y
                     self.player.set_position(playerXPx,playerYPx)
@@ -196,7 +195,7 @@ class Map(object):
             xIter += 1
 
     def doFOV(self):
-        fieldOfView(self.playerPos.x,self.playerPos.y,
+        fieldOfView(self.player.pos.x,self.player.pos.y,
                     self.width,self.height,15,
                     self.funcVisit,self.funcBlocked)
 
