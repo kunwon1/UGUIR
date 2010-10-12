@@ -28,6 +28,7 @@ class Monster(Sprite):
     def updateState(self, map):
         mapPos = map.getCellAtPos(self.pos)
         if mapPos.visible:
+            self.currentPath = []
             pFinder = findPath(map,self.pos,map.player.pos)
             pIter = pFinder.iter
             pIter.next()

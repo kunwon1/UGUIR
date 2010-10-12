@@ -98,7 +98,7 @@ class Map(object):
         else:
             self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
             self.player.pos = newPos
-            self.doObjectUpdate = 1
+            self.objectUpdateRequired = 1
     
     def initViewport(self):
         for x in range(len(self.viewport)):
@@ -142,7 +142,6 @@ class Map(object):
 
     def updateViewport(self, width, height):
         startPos,endPos = self.getViewportPos(width,height)
-        startObjectProc,endObjectProc = self.getViewportPos(width + width/2, height + height/2)
         
         for x in xrange(startPos.x, endPos.x):
             for y in xrange(startPos.y, endPos.y):
@@ -150,16 +149,8 @@ class Map(object):
 
         self.doFOV()
 
-        self.getCellAtPos(self.player.pos).blockedByObject = True
-                
-        if self.doObjectUpdate == 1:
-            self.doObjectUpdate = 0
-            for x in xrange(startObjectProc.x, endObjectProc.x):
-                for y in xrange(startObjectProc.y, endObjectProc.y):
-                    for o in self.map[x][y].objects:
-                        o.updateState(self)
-                        if o.blocked == True:
-                            self.map[x][y].blockedByObject = True
+        if self.objectUpdateRequired == 1:
+            self.doObjectUpdate(width,height)
 
         xIter = 0
 
@@ -187,7 +178,6 @@ class Map(object):
                 for obj in self.map[x][y].objects:
                     if self.map[x][y].discovered == True and self.map[x][y].visible == True:
                         obj.set_position(xIter*32,yIter*32)
-                        print "obj pos: %i,%i" % (obj.x,obj.y)
                         obj.visible = True
                     else:
                         obj.visible = False
@@ -198,6 +188,18 @@ class Map(object):
         fieldOfView(self.player.pos.x,self.player.pos.y,
                     self.width,self.height,15,
                     self.funcVisit,self.funcBlocked)
+
+    def doObjectUpdate(self, width, height):
+        self.objectUpdateRequired = 0
+        startObjectProc,endObjectProc = self.getViewportPos(width + width/2, height + height/2)
+
+        self.getCellAtPos(self.player.pos).blockedByObject = True
+        for x in xrange(startObjectProc.x, endObjectProc.x):
+            for y in xrange(startObjectProc.y, endObjectProc.y):
+                for o in self.map[x][y].objects:
+                    o.updateState(self)
+                    if o.blocked == True:
+                        self.map[x][y].blockedByObject = True
 
     def funcVisit(self,x,y):
         pos = Position(x,y)

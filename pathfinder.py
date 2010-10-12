@@ -2,7 +2,6 @@ from priorityqueueset import PriorityQueueSet
 
 class findPath(object):
     def __init__(self,map,startPos,endPos):
-        print "pathfinding from", startPos, "to", endPos
         self.startPos = startPos
         self.endPos = endPos
         self.map = map
@@ -35,7 +34,6 @@ class findPath(object):
         
         PF = PathFinder(getNeighbors,moveCost,manhattan)
         iterable = PF.compute_path(startPos,endPos)
-        print "pathfinding complete for", startPos, "to", endPos
         self.iter = iterable
 
 class PathFinder(object):
