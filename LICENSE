@@ -76,3 +76,14 @@ Description:    An implementation of the precise permissive field
 You are free to use or modify this code as long as this notice is
 included.
 This code is released without warranty.
+
+===============================================================================
+
+pathfinder.py / priorityqueueset.py license:
+
+===============================================================================
+
+by Eli Bendersky
+
+"The code is in the public domain - do whatever you wish with it."
+    --http://eli.thegreenplace.net/2009/01/09/writing-a-game-in-python-with-pygame-part-iii/

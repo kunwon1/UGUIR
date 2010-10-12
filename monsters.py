@@ -4,9 +4,11 @@ from random import randint
 
 from spritesheet import sheet
 from fighterstats import Stats
+from position import Position
 
 class Monster(Sprite):
     def __init__(self, img,
+             pos=Position(),
              stats=Stats(),
              x=0, y=0,
              blend_src=pyglet.gl.GL_SRC_ALPHA,
@@ -19,9 +21,11 @@ class Monster(Sprite):
         Sprite.__init__(self, img, x, y, blend_src, blend_dest, batch, group, usage)
 
 class Kobold(Monster):
-    def __init__(self, x=0, y=0,
+    def __init__(self, pos=None,
+                 x=0, y=0,
                  batch=None,
                  group=None):
+
         Str = randint(7,10)
         Dex = randint(12,16)
         Con = randint(8,10)
@@ -29,11 +33,12 @@ class Kobold(Monster):
         Wis = randint(6,10)
         Cha = randint(4,8)
         hpr = randint(1,10)
+
         stats = Stats(hpRoll=hpr,
                       Str=Str,Dex=Dex,
                       Con=Con,Int=Int,
                       Wis=Wis,Cha=Cha)
         img = sheet['monster1'][90]
-        Monster.__init__(self, img, stats,
-                         x=x, y=y, batch=batch,
-                         group=group)
+        Monster.__init__(self, img, pos=pos,
+                         stats=stats, x=x, y=y,
+                         batch=batch, group=group)

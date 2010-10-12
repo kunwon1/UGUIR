@@ -52,13 +52,22 @@ class Position(object):
         self.x += 1
         return self
 
+    def neighbors(self):
+        lst = []
+        changesDict = dict()
+        changesLst = [-1,0,1]
+        for i in changesLst:
+            changesDict[i] = changesLst
+        
+        for x in changesDict:
+            for y in changesDict[x]:
+                if x == 0 and y == 0:
+                    continue
+                lst.append(Position(self.x+x, self.y+y))
+        return lst
 
 if __name__ == "__main__":
     p1 = Position(1,2)
     p2 = Position(2,3)
     print p1 == p1
     print p1 != p2
-
-
-    
-    

@@ -66,7 +66,11 @@ class Map(object):
             else:
                 pos = i.getPoint()
                 self.movePlayer(pos)
-                self.map[pos.x+1][pos.y+1].objects.append(Kobold(batch=self.batch, group=self.monsterGroup))
+                self.map[pos.x+1][pos.y+1].objects.append(
+                    Kobold(batch=self.batch,
+                           group=self.monsterGroup,
+                           pos=Position(pos.x+1,pos.y+1))
+                    )
                 lastroom = i
 
     def getCellAtPos(self, pos):
@@ -170,9 +174,13 @@ class Map(object):
                 else:
                     self.viewport[xIter][yIter].opacity = 255
                 for obj in self.map[x][y].objects:
-                    obj.set_position(xIter*32,yIter*32)
-                    if obj.blocked is True:
-                        self.map[x][y].blocked = True
+                    if self.map[x][y].discovered == True and self.map[x][y].visible == True:
+                        obj.set_position(xIter*32,yIter*32)
+                        obj.visible = True
+                        if obj.blocked is True:
+                            self.map[x][y].blocked = True
+                    else:
+                        obj.visible = False
                 yIter += 1
             xIter += 1
 
