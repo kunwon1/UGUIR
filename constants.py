@@ -39,7 +39,9 @@ MINIMUM_ROOM_SIZE = 4
 BSP_RECURSION_DEPTH = 12
 MAX_DOORS_PER_TUNNEL = 2
 
-DEFAULT_MSGSTYLE = dict(font_name='Arial', font_size=10, color=(255,255,255,255))
+DEFAULT_MSGSTYLE = dict(font_name='Arial',
+                        font_size=10,
+                        color=(255,255,255,255))
 
 bonus = {
          "1": -6,

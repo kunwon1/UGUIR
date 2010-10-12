@@ -23,7 +23,10 @@ class Monster(Sprite):
         self.oldPos = pos
         self.playerOldPos = None
         self.currentPath = []
-        Sprite.__init__(self, img, x, y, blend_src, blend_dest, batch, group, usage)
+        Sprite.__init__(self, img,
+                        x, y, blend_src,
+                        blend_dest, batch,
+                        group, usage)
 
     def updateState(self, map):
         mapPos = map.getCellAtPos(self.pos)

@@ -18,7 +18,9 @@ from fov import fieldOfView
 from position import Position
 
 class Map(object):
-    def __init__(self, width=DEFAULT_MAP_CELLS_X, height=DEFAULT_MAP_CELLS_Y):
+    def __init__(self,
+                 width=DEFAULT_MAP_CELLS_X,
+                 height=DEFAULT_MAP_CELLS_Y ):
         self.map = []
         self.viewport = []
         self.width, self.height = width, height
@@ -27,10 +29,10 @@ class Map(object):
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.monsterGroup = pyglet.graphics.OrderedGroup(1)
         self.playerGroup = pyglet.graphics.OrderedGroup(2)
-        self.player = Player(pos=Position(), batch=self.batch, group=self.playerGroup)
+        self.player = Player(pos=Position(),
+                             batch=self.batch,
+                             group=self.playerGroup)
         
-        for i in range(VIEWPORT_W):
-            self.viewport.append([0]*VIEWPORT_H)
         self.initViewport()
         
         self.initGameMap()        
@@ -88,6 +90,8 @@ class Map(object):
             print '\n',
     
     def initViewport(self):
+        for i in range(VIEWPORT_W):
+            self.viewport.append([0]*VIEWPORT_H)
         for x in range(len(self.viewport)):
             for y in range(len(self.viewport[x])):
                 self.viewport[x][y] = Sprite(sheet['dungeon'][81], 
@@ -112,16 +116,19 @@ class Map(object):
             startX = 0
         if startY < 0:
             startY = 0
+
         if endX - startX < VIEWPORT_W - 1:
             if startX < VIEWPORT_W:
                 startX,endX = 0,VIEWPORT_W
             else:
-                startX,endX = mapLenX - VIEWPORT_W, mapLenX 
+                startX,endX = mapLenX - VIEWPORT_W, mapLenX
+ 
         if endY - startY < VIEWPORT_H - 1:
             if startY < VIEWPORT_H:
                 startY,endY = 0,VIEWPORT_H
             else:
                 startY,endY = mapLenY - VIEWPORT_H, mapLenY
+
         startPos = Position(startX,startY)
         endPos = Position(endX,endY)
         return (startPos,endPos)
@@ -140,36 +147,23 @@ class Map(object):
             self.doObjectUpdate(width,height)
 
         xIter = 0
-
         for x in xrange(startPos.x, endPos.x):
             yIter = 0
             for y in xrange(startPos.y, endPos.y):
-                if x == self.player.pos.x and y == self.player.pos.y:
-                    playerXPx = self.viewport[xIter][yIter].x
-                    playerYPx = self.viewport[xIter][yIter].y
+                cell = self.map[x][y]
+                vpSprite = self.viewport[xIter][yIter]
+                
+                self.setSpriteImg(cell,vpSprite)
+                self.setSpriteOpacity(cell,vpSprite)
+
+                objPixels = (xIter*32,yIter*32)
+                self.displayVisibleObjects(cell,objPixels)
+
+                if self.player.pos == Position(x,y):
+                    playerXPx = vpSprite.x
+                    playerYPx = vpSprite.y
                     self.player.set_position(playerXPx,playerYPx)
-                if self.map[x][y].type == DUNGEON_WALL:
-                    self.viewport[xIter][yIter].image = sheet['dungeon'][81]
-                elif self.map[x][y].type == DUNGEON_FLOOR:
-                    self.viewport[xIter][yIter].image = sheet['ground'][170]
-                elif self.map[x][y].type == DUNGEON_DOOR:
-                    self.viewport[xIter][yIter].image = sheet['dungeon'][84]
-                elif self.map[x][y].type == OPEN_DOOR:
-                    self.viewport[xIter][yIter].image = sheet['dungeon'][85]
-                if self.map[x][y].discovered == False:
-                    self.viewport[xIter][yIter].opacity = 0
-                elif self.map[x][y].visible == False:
-                    self.viewport[xIter][yIter].opacity = 128
-                else:
-                    self.viewport[xIter][yIter].opacity = 255
-                for obj in self.map[x][y].objects:
-                    if self.map[x][y].discovered == True and self.map[x][y].visible == True:
-                        obj.set_position(xIter*32,yIter*32)
-                        obj.visible = True
-                    else:
-                        obj.visible = False
-                    if obj.blocked == True:
-                        self.map[x][y].blockedByObject = True
+
                 yIter += 1
             xIter += 1
 
@@ -180,7 +174,8 @@ class Map(object):
 
     def doObjectUpdate(self, width, height):
         self.objectUpdateRequired = 0
-        startObjectProc,endObjectProc = self.getViewportPos(width + width/2, height + height/2)
+        startObjectProc,endObjectProc = \
+            self.getViewportPos(width + width/2, height + height/2)
 
         self.getCellAtPos(self.player.pos).blockedByObject = True
         for x in xrange(startObjectProc.x, endObjectProc.x):
@@ -188,6 +183,36 @@ class Map(object):
                 self.map[x][y].blockedByObject = False
                 for o in self.map[x][y].objects:
                     o.updateState(self)
+
+    def setSpriteImg(self,cell,vpSprite):
+        if cell.type == DUNGEON_WALL:
+            vpSprite.image = sheet['dungeon'][81]
+        elif cell.type == DUNGEON_FLOOR:
+            vpSprite.image = sheet['ground'][170]
+        elif cell.type == DUNGEON_DOOR:
+            vpSprite.image = sheet['dungeon'][84]
+        elif cell.type == OPEN_DOOR:
+            vpSprite.image = sheet['dungeon'][85]
+
+    def setSpriteOpacity(self,cell,vpSprite):
+        if cell.discovered == False:
+            vpSprite.opacity = 0
+        elif cell.visible == False:
+            vpSprite.opacity = 128
+        else:
+            vpSprite.opacity = 255
+
+    def displayVisibleObjects(self,cell,pixels):
+        for obj in cell.objects:
+            if cell.discovered == True and cell.visible == True:
+                obj.set_position(pixels[0],pixels[1])
+                obj.visible = True
+            else:
+                obj.visible = False
+            if obj.blocked == True:
+                cell.blockedByObject = True
+
+    ##### These are used only by the FOV system ###############################
 
     def funcVisit(self,x,y):
         pos = Position(x,y)
@@ -200,6 +225,8 @@ class Map(object):
 
     def funcBlocked(self,x,y):
         return self.map[x][y].blockedByTerrain
+
+    ###########################################################################
 
     def makeRectRoom(self, rect):
         for r in xrange(rect.pos.x, rect.pos.x+rect.w):

@@ -11,7 +11,8 @@ class findPath(object):
             l = list()
             for n in pos.neighbors():
                 if not (n.x >= self.map.width or n.y >= self.map.height):
-                    if not self.map.getCellAtPos(n).blockedByTerrain or n == endPos:
+                    if not self.map.getCellAtPos(n).blockedByTerrain \
+                    or  n == endPos:
                         l.append(n)
             return l
         
@@ -185,7 +186,9 @@ class PathFinder(object):
             return hash(self.coord)
 
         def __str__(self):
-            return 'N(%s) -> g: %s, f: %s' % (self.coord, self.g_cost, self.f_cost)
+            return 'N(%s) -> g: %s, f: %s' % (self.coord,
+                                              self.g_cost,
+                                              self.f_cost)
 
         def __repr__(self):
             return self.__str__()

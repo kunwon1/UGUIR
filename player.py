@@ -20,7 +20,10 @@ class Player(Sprite):
             self.pos = Position()
         else:
             self.pos = pos
-        Sprite.__init__(self, img, x, y, blend_src, blend_dest, batch, group, usage)
+        Sprite.__init__(self, img,
+                        x, y, blend_src,
+                        blend_dest, batch,
+                        group, usage)
 
     def moveOrAttack(self, map, incPos):
         xPx, yPx = self.x, self.y
@@ -33,7 +36,8 @@ class Player(Sprite):
             return
         else:
             map.getCellAtPos(self.pos).blockedByObject = False
-            self.set_position(xPx + incPos.x * SPRITE_SIZE, yPx + incPos.y * SPRITE_SIZE)
+            self.set_position(xPx + incPos.x * SPRITE_SIZE,
+                              yPx + incPos.y * SPRITE_SIZE)
             self.pos = newPos
             map.objectUpdateRequired = 1
         

@@ -2,7 +2,8 @@ from constants import *
 
 class MapCell:
     def __init__(self, pos, batch,
-                 group, blockedByTerrain=True, blockedByObject=False, visible=True,
+                 group, blockedByTerrain=True,
+                 blockedByObject=False, visible=True,
                  discovered=False):
         self.blockedByTerrain = blockedByTerrain
         self.blockedByObject = blockedByObject
@@ -41,8 +42,10 @@ class MapCell:
         if rightResult == DUNGEON_DOOR and leftResult == DUNGEON_WALL:
             return True 
 
-        if not topResult == DUNGEON_WALL and not bottomResult == DUNGEON_WALL:
-            if not leftResult == DUNGEON_WALL and not rightResult == DUNGEON_WALL:
+        if not topResult == DUNGEON_WALL \
+        and not bottomResult == DUNGEON_WALL:
+            if not leftResult == DUNGEON_WALL \
+            and not rightResult == DUNGEON_WALL:
                 return False
         
         results.append(topResult)
