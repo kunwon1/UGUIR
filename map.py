@@ -90,10 +90,10 @@ class Map(object):
     def movePlayer(self, pos):
         xPx, yPx = self.player.x, self.player.y
         newPos = Position(self.player.pos.x + pos.x, self.player.pos.y + pos.y)
-        if self.map[newPos.x][newPos.y].blocked:
+        if self.map[newPos.x][newPos.y].blockedByTerrain:
             if self.map[newPos.x][newPos.y].type == DUNGEON_DOOR:
                 self.map[newPos.x][newPos.y].type = OPEN_DOOR
-                self.map[newPos.x][newPos.y].blocked = False
+                self.map[newPos.x][newPos.y].blockedByTerrain = False
             return
         else:
             self.player.set_position(xPx + pos.x * SPRITE_SIZE, yPx + pos.y * SPRITE_SIZE)
@@ -150,7 +150,7 @@ class Map(object):
 
         self.doFOV()
 
-        self.getCellAtPos(self.player.pos).blocked = True
+        self.getCellAtPos(self.player.pos).blockedByObject = True
                 
         if self.doObjectUpdate == 1:
             self.doObjectUpdate = 0
@@ -158,6 +158,8 @@ class Map(object):
                 for y in xrange(startObjectProc.y, endObjectProc.y):
                     for o in self.map[x][y].objects:
                         o.updateState(self)
+                        if o.blocked == True:
+                            self.map[x][y].blockedByObject = True
 
         xIter = 0
 
@@ -187,8 +189,6 @@ class Map(object):
                         obj.set_position(xIter*32,yIter*32)
                         print "obj pos: %i,%i" % (obj.x,obj.y)
                         obj.visible = True
-                        if obj.blocked is True:
-                            self.map[x][y].blocked = True
                     else:
                         obj.visible = False
                 yIter += 1
@@ -209,12 +209,12 @@ class Map(object):
         self.map[pos.x][pos.y].discovered = True
 
     def funcBlocked(self,x,y):
-        return self.map[x][y].blocked
+        return self.map[x][y].blockedByTerrain
 
     def makeRectRoom(self, rect):
         for r in xrange(rect.pos.x, rect.pos.x+rect.w):
             for n in xrange(rect.pos.y, rect.pos.y+rect.h):
-                self.map[r][n].blocked = False
+                self.map[r][n].blockedByTerrain = False
                 self.map[r][n].type = DUNGEON_FLOOR
         return rect
 
@@ -226,12 +226,12 @@ class Map(object):
             if self.map[x][pos.y].type == DUNGEON_DOOR:
                     continue
             doorPlacement = self.map[x][pos.y].checkDoorPlacement(self)
-            self.map[x][pos.y].blocked = False
+            self.map[x][pos.y].blockedByTerrain = False
             self.map[x][pos.y].type = DUNGEON_FLOOR
             if flag < MAX_DOORS_PER_TUNNEL:
                 if doorPlacement == True:
                     self.map[x][pos.y].type = DUNGEON_DOOR
-                    self.map[x][pos.y].blocked = True
+                    self.map[x][pos.y].blockedByTerrain = True
                     flag += 1
 
     def makeVertTunnel(self, pos, y2):
@@ -242,12 +242,12 @@ class Map(object):
             if self.map[pos.x][y].type == DUNGEON_DOOR:
                     continue
             doorPlacement = self.map[pos.x][y].checkDoorPlacement(self)
-            self.map[pos.x][y].blocked = False
+            self.map[pos.x][y].blockedByTerrain = False
             self.map[pos.x][y].type = DUNGEON_FLOOR
             if flag < MAX_DOORS_PER_TUNNEL:
                 if doorPlacement == True:
                     self.map[pos.x][y].type = DUNGEON_DOOR
-                    self.map[pos.x][y].blocked = True
+                    self.map[pos.x][y].blockedByTerrain = True
                     flag += 1
 
     def makeTwoLeggedTunnel(self, pos1, pos2):
@@ -287,23 +287,23 @@ class Map(object):
                 if self.map[y][x].type == DUNGEON_DOOR:
                     continue
                 doorPlacement = self.map[y][x].checkDoorPlacement(self)
-                self.map[y][x].blocked = False
+                self.map[y][x].blockedByTerrain = False
                 self.map[y][x].type = DUNGEON_FLOOR
                 if flag < MAX_DOORS_PER_TUNNEL:
                     if doorPlacement == True:
                         self.map[y][x].type = DUNGEON_DOOR
-                        self.map[y][x].blocked = True
+                        self.map[y][x].blockedByTerrain = True
                         flag += 1
             else:
                 if self.map[x][y].type == DUNGEON_DOOR:
                     continue
                 doorPlacement = self.map[x][y].checkDoorPlacement(self)
-                self.map[x][y].blocked = False
+                self.map[x][y].blockedByTerrain = False
                 self.map[x][y].type = DUNGEON_FLOOR
                 if flag < MAX_DOORS_PER_TUNNEL:
                     if doorPlacement == True:
                         self.map[x][y].type = DUNGEON_DOOR
-                        self.map[x][y].blocked = True
+                        self.map[x][y].blockedByTerrain = True
                         flag += 1
             error = error + deltay
             if error > 0:

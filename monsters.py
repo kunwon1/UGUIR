@@ -26,10 +26,8 @@ class Monster(Sprite):
         Sprite.__init__(self, img, x, y, blend_src, blend_dest, batch, group, usage)
 
     def updateState(self, map):
-        print 'foo'
-        print self.pos
         mapPos = map.getCellAtPos(self.pos)
-        if mapPos.visible and not self.playerOldPos == map.player.pos:
+        if mapPos.visible:
             pFinder = findPath(map,self.pos,map.player.pos)
             pIter = pFinder.iter
             pIter.next()
@@ -40,15 +38,17 @@ class Monster(Sprite):
             next = self.currentPath.pop(0)
         except IndexError:
             return
-        mapPos.objects.remove(self)
-        map.getCellAtPos(next).objects.append(self)
-        lastMapPos = map.getCellAtPos(self.oldPos)
-        lastMapPos.blocked = False
-        self.visible = True
-        print "curpos:", self.pos
-        
-        self.oldPos = self.pos
-        self.pos = next
+        self.moveOrAttack(map, mapPos, next)
+
+    def moveOrAttack(self, map, curPos, nextPos):
+        if nextPos == map.player.pos:
+            return
+        else:               
+            curPos.objects.remove(self)
+            map.getCellAtPos(nextPos).objects.append(self)
+            lastMapPos = map.getCellAtPos(self.oldPos)
+            self.oldPos = self.pos
+            self.pos = nextPos
 
 class Kobold(Monster):
     def __init__(self, pos, batch, group,

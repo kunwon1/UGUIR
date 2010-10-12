@@ -2,9 +2,10 @@ from constants import *
 
 class MapCell:
     def __init__(self, pos, batch,
-                 group, blocked=True, visible=True,
+                 group, blockedByTerrain=True, blockedByObject=False, visible=True,
                  discovered=False):
-        self.blocked = blocked
+        self.blockedByTerrain = blockedByTerrain
+        self.blockedByObject = blockedByObject
         self.visible = visible
         self.discovered = discovered
         self.batch = batch

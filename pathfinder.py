@@ -11,7 +11,7 @@ class findPath(object):
             l = list()
             for n in pos.neighbors():
                 if not (n.x >= self.map.width or n.y >= self.map.height):
-                    if not self.map.getCellAtPos(n).blocked or n == endPos:
+                    if not self.map.getCellAtPos(n).blockedByTerrain or n == endPos:
                         l.append(n)
             return l
         
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     for i in range(len(map.map)):
         for v in range(len(map.map[i])):
             if map.map[i][v].type == DUNGEON_DOOR:
-                map.map[i][v].blocked = False
+                map.map[i][v].blockedByTerrain = False
     
     started,finished = None,None
     startPos,endPos = None,None
