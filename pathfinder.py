@@ -183,6 +183,13 @@ class PathFinder(object):
 
 
 if __name__ == '__main__':
+    """ WARNING:
+    
+    This code picks two arbitrary points on the map, which
+    in many cases are very far apart in terms of a path.
+    If this runs for > 10 seconds or so you should ctrl+c and try again
+    """
+        
     import sys
     from map import Map
     from constants import *
