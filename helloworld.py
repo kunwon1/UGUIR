@@ -10,10 +10,13 @@ from spritesheet import *
 from map import *
 from constants import *
 from msgbox import msgBox
+from minimap import miniMap
 
 mbox = msgBox()
 map = Map(width=60, height=70)
 map.updateViewport(VIEWPORT_W,VIEWPORT_H)
+    
+minimap = miniMap(map=map, pos=MINIMAP_POS, w=MINIMAP_W, h=MINIMAP_H)
 window = pyglet.window.Window(width=WINDOW_W, height=WINDOW_H)
 
 outline = pyglet.resource.image('outline.png')
@@ -33,8 +36,8 @@ def on_text_motion(motion):
     elif motion == MOTION_LEFT:
         map.player.moveOrAttack(map, LEFT)
     else:
-        pass
-
+        return
+    
 @window.event
 def on_key_press(symbol, modifiers):
     if map.player.dead:
@@ -47,7 +50,6 @@ def on_key_press(symbol, modifiers):
         map.player.moveOrAttack(map, UP_RIGHT)
     elif symbol == NUM_3:
         map.player.moveOrAttack(map, DOWN_RIGHT)
-
     elif symbol == NUM_8:
         map.player.moveOrAttack(map, UP)
     elif symbol == NUM_6:
@@ -57,8 +59,8 @@ def on_key_press(symbol, modifiers):
     elif symbol == NUM_4:
         map.player.moveOrAttack(map, LEFT)
     else:
-        pass
-
+        return
+    
 @window.event
 def on_draw():
     window.clear()
@@ -67,5 +69,5 @@ def on_draw():
     mbox.draw()
     map.batch.draw()
     map.player.draw()
-
+    minimap.draw()
 pyglet.app.run()
