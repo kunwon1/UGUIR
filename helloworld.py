@@ -37,7 +37,6 @@ def on_text_motion(motion):
         map.player.moveOrAttack(map, LEFT)
     else:
         return
-    minimap.updatePointList()
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -61,7 +60,6 @@ def on_key_press(symbol, modifiers):
         map.player.moveOrAttack(map, LEFT)
     else:
         return
-    minimap.updatePointList()
 
 @window.event
 def on_draw():
