@@ -40,6 +40,7 @@ class Player(Sprite):
             if newCell.type == DUNGEON_DOOR:
                 newCell.type = OPEN_DOOR
                 newCell.blockedByTerrain = False
+                self.map.objectUpdateRequired = 1
         elif newCell.blockedByObject:
             if len(newCell.objects) == 1:
                 self.stats.attackOther(newCell.objects[0])

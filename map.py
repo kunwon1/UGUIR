@@ -144,6 +144,10 @@ class Map(object):
         self.doFOV()
 
         if self.objectUpdateRequired == 1:
+            try:
+                self.minimap.updatePointList()
+            except AttributeError:
+                pass
             self.doObjectUpdate(width,height)
 
         xIter = 0

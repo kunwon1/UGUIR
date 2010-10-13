@@ -67,12 +67,14 @@ class Stats(object):
 
     def gotHit(self, other, damage):
         self.hp -= damage
+        if self.hp < 0:
+            self.hp = 0
         if self.parent.name == 'Player':
             self.mbox.addMsg(
                 'You got hit for %i damage by %s' % (damage,other.name))
             self.mbox.addMsg(
                 'Current hp: %i/%i' % (self.hp,self.maxhp))
-        if self.hp < 0:
+        if self.hp == 0:
             self.gotKilled(other)
 
     def gotKilled(self, other):

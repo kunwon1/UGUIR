@@ -1,30 +1,51 @@
 import pyglet
-from map import Map
 from constants import *
-from position import Position
 
 class miniMap:
     def __init__(self, map, pos, w, h):
         self.map = map
+        self.map.minimap = self
         self.xOff = pos.x + 10
         self.yOff = pos.y + 10
+        self.pointList = []
         
     def draw(self):
+        
+        if len(self.pointList) < 1:
+            self.updatePointList()
+            
+        pyglet.graphics.draw(self.pointListLength, pyglet.gl.GL_POINTS,
+                            ('v2i', self.pointList)
+                        )
+        
+    def updatePointList(self):
+        self.pointList = []
+        
         xIter = 0
         for x in range(len(self.map.map)):
             yIter = 0
             for y in range(len(self.map.map[x])):
-                startX = self.xOff + xIter * 2
-                startY = self.yOff + yIter * 2
-                if self.map.map[x][y].type == DUNGEON_FLOOR:
-                    if self.map.map[x][y].discovered == True:
-                        pyglet.graphics.draw(2, pyglet.gl.GL_POINTS,
-                            ('v2i', (startX, startY, startX + 1, startY + 1))
-                        )
+                X = self.xOff + xIter * 2
+                Y = self.yOff + yIter * 2
+                cell = self.map.map[x][y]
+                if cell.type == DUNGEON_FLOOR \
+                or cell.type == DUNGEON_DOOR \
+                or cell.type == OPEN_DOOR:
+                    if cell.discovered == True:
+                        self.pointList.extend([X,Y,X+1,Y,X,Y+1,X+1,Y+1])
                 yIter += 1
             xIter += 1
-
+        
+        self.pointListLength = len(self.pointList) / 2
+        
 if __name__ == '__main__':
+
+    #doesn't work, because no map tiles are discovered by default
+    
+    #code above can be changed for this to work
+
+    from map import Map
+    from position import Position
 
     window = pyglet.window.Window(width=WINDOW_W, height=WINDOW_H)
 
