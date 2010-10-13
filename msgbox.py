@@ -2,11 +2,21 @@ import pyglet.text
 from constants import *
 
 class msgBox(object):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(msgBox, cls).__new__(
+                                cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
         self.doc = pyglet.text.decode_text('Hello, World. Welcome to my game.')
         l = len(self.doc.text)
         self.doc.set_style(0, l, DEFAULT_MSGSTYLE)
-        self.layout = pyglet.text.layout.TextLayout(self.doc, MSGBOX_W, MSGBOX_H, multiline=True)
+        self.layout = pyglet.text.layout.TextLayout(self.doc,
+                                                    MSGBOX_W,
+                                                    MSGBOX_H,
+                                                    multiline=True)
         self.layout.x = MSGBOX_X
         self.layout.y = MSGBOX_Y
 

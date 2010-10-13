@@ -29,7 +29,7 @@ class Map(object):
         self.mapGroup = pyglet.graphics.OrderedGroup(0)
         self.monsterGroup = pyglet.graphics.OrderedGroup(1)
         self.playerGroup = pyglet.graphics.OrderedGroup(2)
-        self.player = Player(pos=Position(),
+        self.player = Player(map=self, pos=Position(),
                              batch=self.batch,
                              group=self.playerGroup)
         
@@ -68,7 +68,7 @@ class Map(object):
                 pos = i.getPoint()
                 self.player.moveOrAttack(self,pos)
                 self.map[pos.x+1][pos.y+1].objects.append(
-                    Kobold(Position(pos.x+1,pos.y+1),
+                    Kobold(Position(pos.x+1,pos.y+1), self,
                            self.batch, self.monsterGroup)
                     )
                 lastroom = i

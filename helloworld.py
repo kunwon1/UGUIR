@@ -22,6 +22,8 @@ outline.set_position(OUTLINE_X, OUTLINE_Y)
 
 @window.event
 def on_text_motion(motion):
+    if map.player.dead:
+        return
     if motion == MOTION_UP:
         map.player.moveOrAttack(map, UP)
     elif motion == MOTION_RIGHT:
@@ -35,6 +37,8 @@ def on_text_motion(motion):
 
 @window.event
 def on_key_press(symbol, modifiers):
+    if map.player.dead:
+        return
     if symbol == NUM_1:
         map.player.moveOrAttack(map, DOWN_LEFT)
     elif symbol == NUM_7:
