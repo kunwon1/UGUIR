@@ -1,7 +1,7 @@
 from constants import *
 from msgbox import msgBox
-
-from random import randint
+from spritesheet import getCorpseSprite
+from dice import Dice
 
 class Stats(object):
     def __init__(self, parent, hpRoll=10,
@@ -11,6 +11,7 @@ class Stats(object):
 
         self.parent = parent
         self.mbox = msgBox()
+        self.dice = Dice()
 
         self.Str = Str
         self.Dex = Dex
@@ -28,7 +29,8 @@ class Stats(object):
         self.maxhp = self.hp
 
     def dmg(self):
-        damage = randint(1,6 + bonus[str(self.Str)])
+        damage = self.dice.roll('1d6+' + str(bonus[str(self.Str)]))
+#        damage = randint(1,6 + bonus[str(self.Str)])
         if damage < 1:
             damage = 1
         return damage
@@ -36,9 +38,6 @@ class Stats(object):
     def attackOther(self, other):
         if other.dead:
             return
-        a = self.attackRoll()
-        b = other.stats.defenseRoll()
-        print 'in attackOther, got %i and %i' % (a,b)
         if self.parent.name == 'Player':
             self.parent.map.objectUpdateRequired = 1
         if self.attackRoll() >= other.stats.defenseRoll():
@@ -48,11 +47,10 @@ class Stats(object):
         
     def attackRoll(self):
         return self.baseAttack + \
-               bonus[str((self.Str + self.Dex) / 2)] + \
-               randint(1,20)
+               bonus[str((self.Str + self.Dex) / 2)] + self.dice.roll('1d20')
 
     def defenseRoll(self):
-        return self.baseDefense + bonus[str(self.Dex)] + randint(1,20)
+        return self.baseDefense + bonus[str(self.Dex)] + self.dice.roll('1d20')
 
     def doHit(self, other):
         damage = self.dmg()
@@ -78,8 +76,8 @@ class Stats(object):
             self.gotKilled(other)
 
     def gotKilled(self, other):
-        print 'gotKilled'
         self.parent.dead = True
         self.parent.blocked = False
+        self.parent.image = getCorpseSprite()
         if self.parent.name == 'Player':
             self.mbox.addMsg('You got killed by a %s!' % other.name)

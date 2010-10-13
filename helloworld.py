@@ -16,7 +16,7 @@ mbox = msgBox()
 map = Map(width=60, height=70)
 map.updateViewport(VIEWPORT_W,VIEWPORT_H)
     
-minimap = miniMap(map=map, pos=MINIMAP_POS, w=MINIMAP_W, h=MINIMAP_H)
+minimap = miniMap(map=map, pos=MINIMAP_POS)
 window = pyglet.window.Window(width=WINDOW_W, height=WINDOW_H)
 
 outline = pyglet.resource.image('outline.png')

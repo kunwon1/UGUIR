@@ -4,9 +4,7 @@ import pyglet.graphics
 pyglet.resource.path = ['res', 'res/images',]
 pyglet.resource.reindex()
 
-import random
-random.seed()
-
+from dice import Dice
 from constants import *
 from spritesheet import sheet
 from player import Player
@@ -33,6 +31,8 @@ class Map(object):
                              batch=self.batch,
                              group=self.playerGroup)
         
+        self.dice = Dice()
+                
         self.initViewport()
         
         self.initGameMap()        
@@ -52,7 +52,7 @@ class Map(object):
         bsp = BSP(self.playableArea)
         self.rooms = []
         for r in bsp.rects:
-            if random.randint(0,10) > 3:
+            if self.dice.roll('1d10') > 3:
                 roomrect = self.makeRandRoom(r)
                 self.rooms.append(roomrect)
                 
@@ -272,7 +272,7 @@ class Map(object):
                     flag += 1
 
     def makeTwoLeggedTunnel(self, pos1, pos2):
-        if random.randint(0,1) == 0:
+        if self.dice.roll('1d2') == 1:
             self.makeHorizTunnel(pos1, pos2.x)
             self.makeVertTunnel(pos2, pos1.y)
         else:
@@ -332,14 +332,14 @@ class Map(object):
                 error = error - deltax
 
     def randTunnel(self, pos1, pos2):
-        if random.randint(0,10) > 3:
+        if self.dice.roll('1d10') > 3:
             self.makeTwoLeggedTunnel(pos1,pos2)
         else:
             self.makeDiagTunnel(pos1,pos2)
 
     def makeRandRoom(self, rect):
-        subFromW = random.randint(1,5)
-        subFromH = random.randint(1,5)
+        subFromW = self.dice.roll('1d5')
+        subFromH = self.dice.roll('1d5')
         addToX = subFromW / 2
         subFromW = subFromW - addToX
         addToY = subFromH / 2

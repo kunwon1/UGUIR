@@ -2,10 +2,10 @@ import pyglet
 from constants import *
 
 class miniMap:
-    def __init__(self, map, pos, w, h):
+    def __init__(self, map, pos):
         self.map = map
         self.map.minimap = self
-        self.xOff = pos.x + 10
+        self.xOff = pos.x + ( (MINIMAP_W - len(self.map.map) * 2) / 2 )
         self.yOff = pos.y + 10
         self.pointList = []
         
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     map = Map(width=60,height=79)
     miniMapPos = Position(MINIMAP_X,MINIMAP_Y)
     
-    mm = miniMap(map=map, pos=miniMapPos, w=MINIMAP_W, h=MINIMAP_H)
+    mm = miniMap(map=map, pos=miniMapPos)
     
     @window.event
     def on_draw():
