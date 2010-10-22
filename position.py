@@ -22,6 +22,9 @@ class Position(object):
         if not isinstance(other, Position):
             return False
         return Position(self.x + other.x, self.y + other.y)
+    
+    def copy(self):
+        return Position(self.x,self.y)
 
     def moveUp(self):
         self.y += 1

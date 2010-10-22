@@ -1,6 +1,9 @@
 from position import Position
+import pyglet.resource
 
 SPRITE_SIZE = 32
+
+WHITE = (255,255,255)
 
 DOWN_LEFT  = Position(-1,-1)
 UP_LEFT    = Position(-1,1)
@@ -24,12 +27,16 @@ MSGBOX_X, MSGBOX_Y = 0, MAP_H
 OUTLINE_W, OUTLINE_H = 224, 400
 OUTLINE_X, OUTLINE_Y = MAP_W, MAP_H - OUTLINE_H
 
-MINIMAP_X, MINIMAP_Y = MAP_W, 0
 MINIMAP_W = WINDOW_W - MAP_W
 MINIMAP_H = MINIMAP_W
-MINIMAP_POS = Position(MINIMAP_X,MINIMAP_Y)
+MINIMAP_POS = Position(MAP_W, 0)
 
-MSGBOX_LINES = 7
+STATUSWINDOW_W = WINDOW_W - MAP_W
+STATUSWINDOW_H = WINDOW_H - MAP_H
+STATUSWINDOW_POS = Position(MAP_W,MAP_H)
+STATUSWIN_MODULE_H = STATUSWINDOW_H / 6
+
+MSGBOX_LINES = 5
 
 DUNGEON_WALL = 0
 DUNGEON_FLOOR = 1
@@ -43,10 +50,6 @@ CLOSE_TO_EDGE = 164
 MINIMUM_ROOM_SIZE = 4
 BSP_RECURSION_DEPTH = 12
 MAX_DOORS_PER_TUNNEL = 2
-
-DEFAULT_MSGSTYLE = dict(font_name='Arial',
-                        font_size=10,
-                        color=(255,255,255,255))
 
 bonus = {
          "1": -6,
@@ -68,3 +71,10 @@ bonus = {
          "17": 5,
          "18": 6
          }
+
+
+pyglet.resource.add_font('NotCourierSans-Bold.otf')
+
+DEFAULT_MSGSTYLE = dict(font_name='NotCourierSans',
+                        font_size=10, bold=True,
+                        color=(255,255,255,255))

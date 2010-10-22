@@ -1,9 +1,6 @@
 from pyglet.sprite import Sprite
 import pyglet.graphics
 
-pyglet.resource.path = ['res', 'res/images',]
-pyglet.resource.reindex()
-
 from dice import Dice
 from constants import *
 from spritesheet import sheet

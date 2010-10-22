@@ -1,13 +1,8 @@
 import pyglet
 from pyglet.window.key import *
 
-pyglet.resource.path = ['res', 'res/images',]
-pyglet.resource.reindex()
-
 from spritesheet import *
-
-# map is a built-in function map(func, sequence) -> [func(seq0), func(seq1) ..]
-from map import *
+from gamemap import *
 from constants import *
 from msgbox import msgBox
 from minimap import miniMap
@@ -69,5 +64,6 @@ def on_draw():
     mbox.draw()
     map.batch.draw()
     map.player.draw()
+    map.player.statuswindow.draw()
     minimap.draw()
 pyglet.app.run()

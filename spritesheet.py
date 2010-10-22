@@ -1,5 +1,8 @@
 import pyglet
 
+pyglet.resource.path = ['res', 'res/images',]
+pyglet.resource.reindex()
+
 from random import randint
 
 # 71-76 on misc for corpse

@@ -5,6 +5,7 @@ from spritesheet import sheet
 from position import Position
 from constants import *
 from fighterstats import Stats
+from statuswindow import statusWindow
 from msgbox import msgBox
 
 class Player(Sprite):
@@ -18,11 +19,14 @@ class Player(Sprite):
                  usage='dynamic',
                  ):
         self.dead = False
-        self.name = 'Player'
+        self.charName = 'Player'
+        self.charClass = 'Fighter'
         self.map = map
         self.mbox = msgBox()
         img = sheet['class'][79]
         self.stats = Stats(self, Con=18, hpRoll=20)
+        self.statuswindow = statusWindow(self, batch, group)
+
         if pos is None:
             self.pos = Position()
         else:
@@ -52,4 +56,4 @@ class Player(Sprite):
                               yPx + incPos.y * SPRITE_SIZE)
             self.pos = newPos
             map.objectUpdateRequired = 1
-        
+        self.statuswindow.updateStats()

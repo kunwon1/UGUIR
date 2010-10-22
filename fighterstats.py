@@ -2,6 +2,9 @@ from constants import *
 from msgbox import msgBox
 from spritesheet import getCorpseSprite
 from dice import Dice
+import player
+
+baseMP = 10
 
 class Stats(object):
     def __init__(self, parent, hpRoll=10,
@@ -26,7 +29,12 @@ class Stats(object):
         self.attackRoll
         
         self.hp = hpRoll + bonus[str(Con)]
-        self.maxhp = self.hp
+        self.maxHP = self.hp
+        self.mp = baseMP + bonus[str(Int)]
+        self.maxMP = self.mp
+        
+        self.xp = 0
+        self.xpForNextLevel = 1000
 
     def dmg(self):
         damage = self.dice.roll('1d6+' + str(bonus[str(self.Str)]))
@@ -38,7 +46,7 @@ class Stats(object):
     def attackOther(self, other):
         if other.dead:
             return
-        if self.parent.name == 'Player':
+        if isinstance(self.parent, player.Player):
             self.parent.map.objectUpdateRequired = 1
         if self.attackRoll() >= other.stats.defenseRoll():
             self.doHit(other)
@@ -55,23 +63,23 @@ class Stats(object):
     def doHit(self, other):
         damage = self.dmg()
         other.stats.gotHit(self.parent, damage)
-        if self.parent.name == 'Player':
+        if isinstance(self.parent, player.Player):
             self.mbox.addMsg(
                 'You hit %s for %i damage!' % (other.name, damage))
             self.mbox.addMsg(
                 '%s hp: %i/%i' % (other.name,
                                   other.stats.hp,
-                                  other.stats.maxhp))
+                                  other.stats.maxHP))
 
     def gotHit(self, other, damage):
         self.hp -= damage
         if self.hp < 0:
             self.hp = 0
-        if self.parent.name == 'Player':
+        if isinstance(self.parent, player.Player):
             self.mbox.addMsg(
                 'You got hit for %i damage by %s' % (damage,other.name))
             self.mbox.addMsg(
-                'Current hp: %i/%i' % (self.hp,self.maxhp))
+                'Current hp: %i/%i' % (self.hp,self.maxHP))
         if self.hp == 0:
             self.gotKilled(other)
 
@@ -79,5 +87,8 @@ class Stats(object):
         self.parent.dead = True
         self.parent.blocked = False
         self.parent.image = getCorpseSprite()
-        if self.parent.name == 'Player':
+        if isinstance(self.parent, player.Player):
             self.mbox.addMsg('You got killed by a %s!' % other.name)
+        else:
+            other.stats.xp += 150
+            other.statuswindow.updateStats()
